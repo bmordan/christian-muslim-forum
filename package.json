@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "build": "node ./bin/main.js",
+    "serve": "http-server ./dist -p 3000"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "elm-static-html-lib": "^0.1.0",
+    "graphql-request": "^1.4.1",
+    "ramda": "^0.25.0",
+    "string-replace-stream": "0.0.2"
+  }
+}

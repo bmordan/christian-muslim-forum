@@ -1,0 +1,5 @@
+node_modules
+elm-stuff
+.elm-static-html
+dist/*
+.DS_Store
