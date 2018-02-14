@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css?family=Libre+Baskerville|Muli');
+
+body {
+  font-family: 'Muli', sans-serif;
+}
+
+.feature-font {
+  font-family: 'Libre Baskerville', serif;
+}
+
+nav {
+  justify-content: start;
+  padding-left: 145px;
+}
+
+.bg_cmf_green {
+  background-color: #12745E;
+}
+
+.bg_cmf_islamic {
+  background-color: #12745e;
+  background-image: url(cmf_pattern.png);
+  background-size: 50px 50px;
+  background-position: center 57px;
+}
+
+.header-img {
+  position: absolute;
+  width: 160px;
+  left: -20px;
+  top: -50px;
+  border: solid 2px #12745E;
+  border-radius: 50%;
+}

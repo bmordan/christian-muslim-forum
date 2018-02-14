@@ -3,7 +3,7 @@ module Config exposing (graphqlEndpoint, frontendUrl)
 
 wordpressUrl : String
 wordpressUrl =
-    "http://localhost:8000"
+    "http://46.101.6.182"
 
 
 graphqlEndpoint : String
