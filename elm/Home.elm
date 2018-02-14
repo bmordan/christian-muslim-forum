@@ -10,6 +10,7 @@ import Helpers exposing (setInnerHtml)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint)
 import Header
+import Footer
 
 
 main : Program Never Model Msg
@@ -24,16 +25,26 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model Header.initModel "" "", sendRequest )
+    let
+        model =
+            { headerModel = Header.initModel
+            , footerModel = Footer.initModel
+            , title = ""
+            , content = ""
+            }
+    in
+        ( model, sendRequest )
 
 
 type Msg
     = GotContent (Result Error Data)
     | HeaderMsg Header.Msg
+    | FooterMsg Footer.Msg
 
 
 type alias Model =
     { headerModel : Header.Model
+    , footerModel : Footer.Model
     , title : String
     , content : String
     }
@@ -71,6 +82,7 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" decodeHeaderModel
+        |> required "footerModel" decodeHeaderModel
         |> required "title" string
         |> required "content" string
 
@@ -124,6 +136,13 @@ update msg model =
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
 
+        FooterMsg subMsg ->
+            let
+                ( updatedFooterModel, footerCmd ) =
+                    Footer.update subMsg model.footerModel
+            in
+                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
+
 
 viewPage : Model -> Html.Html Msg
 viewPage model =
@@ -137,7 +156,7 @@ viewPage model =
             , node "title" [] [ text model.title ]
             ]
         , node "body"
-            []
+            [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
             [ div [ id "elm-root" ] [ view model ]
             , node "script" [ src "bundle.js" ] []
             , node "script" [ id "elm-js" ] []
@@ -150,4 +169,5 @@ view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , div [ setInnerHtml model.content ] []
+        , Html.map FooterMsg (Footer.view model.footerModel)
         ]

@@ -4,7 +4,7 @@
     "copy": "cp public/* dist/",
     "make": "elm-make ./elm/Home.elm --output ./dist/bundle.js",
     "serve": "http-server ./dist -p 3000",
-    "watch": "onchange elm/*.elm -- npm run build"
+    "watch": "onchange elm/*.elm -- npm run build && onchange public/* -- npm run copy"
   },
   "dependencies": {
     "bluebird": "^3.5.1",

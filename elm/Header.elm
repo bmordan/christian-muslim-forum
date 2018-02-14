@@ -5,11 +5,10 @@ import Html.Attributes exposing (href, src, style, classList, id)
 import Html.Events exposing (onClick)
 import Config exposing (frontendUrl)
 import Json.Encode as Encode
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
 import Dom exposing (Error)
 import Dom.Scroll exposing (toLeft, toRight)
 import Task
+import Helpers exposing (chev, navItems)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -56,21 +55,6 @@ scrollToLeft =
 scrollToRight : Cmd Msg
 scrollToRight =
     Task.attempt (always Noop) <| toRight "header-nav"
-
-
-chevRight : Svg.Svg msg
-chevRight =
-    svg
-        [ width "8"
-        , height "20"
-        ]
-        [ Svg.path
-            [ d "M7.1 9.326l.365.242-.101.153.101.154-.364.242-5.718 8.604-.376-.25L6.82 9.72 1.007.971l.376-.25 5.718 8.605z"
-            , stroke "#FBFBFB"
-            , fill "none"
-            ]
-            []
-        ]
 
 
 navItems : List String
@@ -124,7 +108,10 @@ flipChev model =
 
 view : Model -> Html.Html Msg
 view model =
-    div [ classes [ fixed, w_100, flex, items_start, justify_end ], classList [ ( "bg_cmf_islamic", True ) ] ]
+    div
+        [ classes [ fixed, w_100, flex, items_start, justify_end ]
+        , classList [ ( "bg_cmf_islamic", True ), ( "header", True ) ]
+        ]
         [ Html.a [ href "/" ]
             [ img
                 [ src (frontendUrl ++ "/cmf-circle-logo.png")
@@ -148,5 +135,5 @@ view model =
             , onClick Scroll
             , flipChev model
             ]
-            [ chevRight ]
+            [ chev ]
         ]

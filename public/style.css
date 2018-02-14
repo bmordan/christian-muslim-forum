@@ -1,4 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Libre+Baskerville|Muli');
+:root {
+  --cmf-green: #12745E;
+  --cmf-white: #FBFBFB;
+}
 
 body {
   font-family: 'Muli', sans-serif;
@@ -8,17 +12,45 @@ body {
   font-family: 'Libre Baskerville', serif;
 }
 
-nav {
+.header nav {
   justify-content: start;
   padding-left: 145px;
 }
 
+.footer {
+  min-height: 36rem;
+}
+
+.double_b_btns {
+  position: relative;
+  border: 2px solid var(--cmf-green);
+  background-color: var(--cmf-white);
+  color: var(--cmf-green);
+  text-align: center;
+  padding: .75rem 0;
+  width: 157px;
+  margin: 0.75rem auto;
+  border-radius: 3px;
+}
+
+.double_b_btns:before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid var(--cmf-white);
+  border-radius: 3px;
+}
+
 .bg_cmf_green {
-  background-color: #12745E;
+  background-color: var(--cmf-green);
 }
 
 .bg_cmf_islamic {
-  background-color: #12745e;
+  background-color: var(--cmf-green);
   background-image: url(cmf_pattern.png);
   background-size: 50px 50px;
   background-position: center 57px;
@@ -29,6 +61,12 @@ nav {
   width: 160px;
   left: -20px;
   top: -50px;
-  border: solid 2px #12745E;
+  border: solid 2px var(--cmf-green);
   border-radius: 50%;
+}
+
+@media screen and (min-width: 30rem) {
+  .footer {
+    min-height: 16rem;
+  }
 }
