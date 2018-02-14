@@ -3,3 +3,4 @@ elm-stuff
 .elm-static-html
 dist/*
 .DS_Store
+elm/Config.elm

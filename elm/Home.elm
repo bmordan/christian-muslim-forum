@@ -2,12 +2,14 @@ module Home exposing (..)
 
 import Html exposing (text, div, node)
 import Html.Attributes exposing (href, src, id, content, rel, name)
+import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
 import Helpers exposing (setInnerHtml)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint)
+import Header
 
 
 main : Program Never Model Msg
@@ -22,17 +24,19 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" "", sendRequest )
-
-
-type alias Model =
-    { title : String
-    , content : String
-    }
+    ( Model Header.initModel "" "", sendRequest )
 
 
 type Msg
     = GotContent (Result Error Data)
+    | HeaderMsg Header.Msg
+
+
+type alias Model =
+    { headerModel : Header.Model
+    , title : String
+    , content : String
+    }
 
 
 type alias Data =
@@ -42,6 +46,11 @@ type alias Data =
 type alias Page =
     { title : String
     , content : String
+    }
+
+
+type alias HeaderModel =
+    { scrollLeft : Bool
     }
 
 
@@ -61,8 +70,15 @@ decodePage =
 decodeModel : Decoder Model
 decodeModel =
     decode Model
+        |> required "headerModel" decodeHeaderModel
         |> required "title" string
         |> required "content" string
+
+
+decodeHeaderModel : Decoder HeaderModel
+decodeHeaderModel =
+    decode HeaderModel
+        |> required "scrollLeft" bool
 
 
 pageRequest : Operation Query Variables
@@ -101,6 +117,13 @@ update msg model =
         GotContent (Err err) ->
             ( model, Cmd.none )
 
+        HeaderMsg subMsg ->
+            let
+                ( updatedHeaderModel, headerCmd ) =
+                    Header.update subMsg model.headerModel
+            in
+                ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
+
 
 viewPage : Model -> Html.Html Msg
 viewPage model =
@@ -109,6 +132,7 @@ viewPage model =
         [ node "head"
             []
             [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
+            , node "link" [ href "/style.css", rel "stylesheet" ] []
             , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
             , node "title" [] [ text model.title ]
             ]
@@ -123,4 +147,7 @@ viewPage model =
 
 view : Model -> Html.Html Msg
 view model =
-    div [ setInnerHtml model.content ] []
+    div []
+        [ Html.map HeaderMsg (Header.view model.headerModel)
+        , div [ setInnerHtml model.content ] []
+        ]

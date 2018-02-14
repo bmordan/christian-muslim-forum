@@ -33,7 +33,7 @@ const filterResponse = (res) => {
   return pipe(
       prop('pageBy')
       , pick(['title', 'content'])
-      , assoc('loading', false)
+      , assoc('headerModel', {scrollLeft: false})
     )(res)
 }
 
@@ -63,6 +63,7 @@ const writeJs = () => {
   const child = exec(`elm-make ./elm/${moduleName}.elm --output ./dist/bundle.js`)
   return promiseFromChildProcess(child)
 }
+
 
 pipeP(
   request

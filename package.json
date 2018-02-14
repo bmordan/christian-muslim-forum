@@ -1,7 +1,10 @@
 {
   "scripts": {
-    "build": "node ./bin/main.js",
-    "serve": "http-server ./dist -p 3000"
+    "build": "npm run copy && node ./bin/main.js",
+    "copy": "cp public/* dist/",
+    "make": "elm-make ./elm/Home.elm --output ./dist/bundle.js",
+    "serve": "http-server ./dist -p 3000",
+    "watch": "onchange elm/*.elm -- npm run build"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
