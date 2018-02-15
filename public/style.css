@@ -21,6 +21,31 @@ body {
   min-height: 36rem;
 }
 
+.modal {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+.modal-box {
+  height: 80vh;
+  width: 90%;
+}
+
+.modal-box input {
+  width: 90%;
+  margin: .5rem auto;
+  outline: none;
+  padding: .5rem;
+  border: none;
+  border-bottom: 2px solid var(--cmf-green);
+}
+
 .double_b_btns {
   position: relative;
   border: 2px solid var(--cmf-green);

@@ -4,13 +4,20 @@
     "copy": "cp public/* dist/",
     "make": "elm-make ./elm/Home.elm --output ./dist/bundle.js",
     "serve": "http-server ./dist -p 3000",
-    "watch": "onchange elm/*.elm -- npm run build && onchange public/* -- npm run copy"
+    "server": "node server.js",
+    "watch": "onchange elm/*.elm -- npm run build"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
+    "dotenv": "^5.0.0",
     "elm-static-html-lib": "^0.1.0",
     "graphql-request": "^1.4.1",
     "ramda": "^0.25.0",
-    "string-replace-stream": "0.0.2"
+    "string-replace-stream": "0.0.2",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "joi-browser": "^13.0.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
   }
 }

@@ -1,8 +1,8 @@
 module Footer exposing (..)
 
-import Html exposing (nav, a, text, div, img, nav)
-import Html.Attributes exposing (href, src, style, classList, id)
-import Html.Events exposing (onClick)
+import Html exposing (nav, a, text, div, img, nav, input)
+import Html.Attributes exposing (href, src, style, classList, value, name, placeholder)
+import Html.Events exposing (onClick, onInput)
 import Config exposing (frontendUrl)
 import Json.Encode as Encode
 import Dom exposing (Error)
@@ -19,8 +19,11 @@ import Tachyons.Classes
         , justify_end
         , justify_start
         , justify_between
+        , justify_center
         , items_center
         , items_start
+        , self_start
+        , self_end
         , pr1
         , pl2
         , pv2
@@ -46,37 +49,36 @@ import Tachyons.Classes
         , ph3
         , cf
         , fl
+        , fr
         , w_50_ns
         , fr_ns
         , mt2
         , tc
+        , tr
         , tl_ns
+        , bg_white
         )
 
 
 type Msg
-    = Scroll
-    | Noop
+    = Modal
+    | Email String
+    | Fname String
+    | Lname String
+    | Subscribe
 
 
 type alias Model =
-    { scrollLeft : Bool
+    { modal : Bool
+    , email : String
+    , fname : String
+    , lname : String
     }
 
 
 initModel : Model
 initModel =
-    Model False
-
-
-scrollToLeft : Cmd Msg
-scrollToLeft =
-    Task.attempt (always Noop) <| toLeft "footer-nav"
-
-
-scrollToRight : Cmd Msg
-scrollToRight =
-    Task.attempt (always Noop) <| toRight "footer-nav"
+    Model False "" "" ""
 
 
 createNavItem : String -> Html.Html Msg
@@ -89,33 +91,32 @@ createNavItem item =
         ]
 
 
+sendSubscription : Model -> Model
+sendSubscription model =
+    { modal = False
+    , fname = ""
+    , lname = ""
+    , email = ""
+    }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Scroll ->
-            let
-                cmd =
-                    if model.scrollLeft then
-                        scrollToLeft
-                    else
-                        scrollToRight
-            in
-                ( { model | scrollLeft = not model.scrollLeft }, cmd )
+        Modal ->
+            ( { model | modal = not model.modal }, Cmd.none )
 
-        Noop ->
-            ( model, Cmd.none )
+        Fname fname ->
+            ( { model | fname = fname }, Cmd.none )
 
+        Lname lname ->
+            ( { model | lname = lname }, Cmd.none )
 
-flipChev : Model -> Html.Attribute msg
-flipChev model =
-    let
-        deg =
-            if model.scrollLeft then
-                "0"
-            else
-                "180"
-    in
-        Html.Attributes.style [ ( "transform", "rotate(" ++ deg ++ "deg)" ) ]
+        Email email ->
+            ( { model | email = email }, Cmd.none )
+
+        Subscribe ->
+            ( sendSubscription model, Cmd.none )
 
 
 address : Html.Html Msg
@@ -131,13 +132,61 @@ address =
         ]
 
 
+modal : Model -> Html.Html Msg
+modal model =
+    if not model.modal then
+        div [] []
+    else
+        div
+            [ classList [ ( "modal", True ) ]
+            , classes [ flex, items_center, justify_center ]
+            ]
+            [ div
+                [ classes [ bg_white, flex, flex_column, justify_between ]
+                , classList [ ( "modal-box", True ) ]
+                ]
+                [ div [ classes [ fr, pa2, tr ], onClick Modal ] [ text "close" ]
+                , div [ classes [ flex, flex_column ] ]
+                    [ input
+                        [ name "fname"
+                        , value model.fname
+                        , placeholder "First name"
+                        , onInput Fname
+                        ]
+                        []
+                    , input
+                        [ name "lname"
+                        , value model.lname
+                        , placeholder "Last name"
+                        , onInput Lname
+                        ]
+                        []
+                    , input
+                        [ name "email"
+                        , value model.email
+                        , placeholder "email"
+                        , onInput Email
+                        ]
+                        []
+                    ]
+                , div
+                    [ classList [ ( "double_b_btns", True ) ]
+                    , classes [ pb1 ]
+                    , onClick Subscribe
+                    ]
+                    [ text "Subscribe" ]
+                ]
+            ]
+
+
 view : Model -> Html.Html Msg
 view model =
     div
         [ classes [ w_100, flex, flex_column, justify_between ]
         , classList [ ( "bg_cmf_islamic", True ), ( "footer", True ) ]
         ]
-        [ div
+        [ modal model
+        , div
             [ classes [ w_100, db ]
             , Html.Attributes.style [ ( "width", "100vw" ) ]
             , Html.Attributes.id "footer-nav"
@@ -153,7 +202,7 @@ view model =
                     [ address ]
                 , div [ classes [ fl, w_100, w_50_ns ] ]
                     [ div [ classes [ fr_ns, pv6, pb0_ns, pt0_ns, pr3_ns ] ]
-                        [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Subscribe" ]
+                        [ div [ classList [ ( "double_b_btns", True ) ], onClick Modal ] [ text "Subscribe" ]
                         , div [ classList [ ( "double_b_btns", True ) ] ] [ text "Follow Us" ]
                         ]
                     ]

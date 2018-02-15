@@ -8,7 +8,7 @@ import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, 
 import Json.Decode.Pipeline exposing (decode, required, optional)
 import Helpers exposing (setInnerHtml)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Config exposing (graphqlEndpoint)
+import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
 import Footer
 
@@ -65,6 +65,14 @@ type alias HeaderModel =
     }
 
 
+type alias FooterModel =
+    { modal : Bool
+    , fname : String
+    , lname : String
+    , email : String
+    }
+
+
 decodeData : Decoder Data
 decodeData =
     decode Data
@@ -82,7 +90,7 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" decodeHeaderModel
-        |> required "footerModel" decodeHeaderModel
+        |> required "footerModel" decodeFooterModel
         |> required "title" string
         |> required "content" string
 
@@ -91,6 +99,15 @@ decodeHeaderModel : Decoder HeaderModel
 decodeHeaderModel =
     decode HeaderModel
         |> required "scrollLeft" bool
+
+
+decodeFooterModel : Decoder FooterModel
+decodeFooterModel =
+    decode FooterModel
+        |> required "modal" bool
+        |> required "fname" string
+        |> required "lname" string
+        |> required "email" string
 
 
 pageRequest : Operation Query Variables
