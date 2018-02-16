@@ -34,7 +34,7 @@ const filterResponse = (res) => {
       prop('pageBy')
       , pick(['title', 'content'])
       , assoc('headerModel', {scrollLeft: false})
-      , assoc('footerModel', {modal: false, fname: "", lname: "", email: ""})
+      , assoc('footerModel', {modal: false, fname: "", lname: "", email: "", message: ""})
     )(res)
 }
 

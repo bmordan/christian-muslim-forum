@@ -1,11 +1,11 @@
 {
   "scripts": {
-    "build": "npm run copy && node ./bin/main.js",
-    "copy": "cp public/* dist/",
+    "build": "node ./bin/main.js",
+    "copy": "rsync -a public/* dist/",
     "make": "elm-make ./elm/Home.elm --output ./dist/bundle.js",
-    "serve": "http-server ./dist -p 3000",
-    "server": "node server.js",
-    "watch": "onchange elm/*.elm -- npm run build"
+    "serve": "node server.js",
+    "start": "npm run build && npm run copy && npm run serve",
+    "watch": "onchange elm/*.elm -- npm start"
   },
   "dependencies": {
     "bluebird": "^3.5.1",

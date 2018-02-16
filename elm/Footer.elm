@@ -3,11 +3,16 @@ module Footer exposing (..)
 import Html exposing (nav, a, text, div, img, nav, input)
 import Html.Attributes exposing (href, src, style, classList, value, name, placeholder)
 import Html.Events exposing (onClick, onInput)
+import Http exposing (..)
 import Config exposing (frontendUrl)
 import Json.Encode as Encode
+import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
+import Json.Decode.Pipeline exposing (decode, required, requiredAt)
 import Dom exposing (Error)
 import Dom.Scroll exposing (toLeft, toRight)
 import Task
+import Process
+import Time
 import Helpers exposing (chev, navItems)
 import Tachyons exposing (..)
 import Tachyons.Classes
@@ -37,8 +42,10 @@ import Tachyons.Classes
         , pt6
         , pv6
         , pa2
+        , pa3
         , pb1
         , white
+        , red
         , link
         , dn_ns
         , w_100
@@ -57,6 +64,7 @@ import Tachyons.Classes
         , tr
         , tl_ns
         , bg_white
+        , f7
         )
 
 
@@ -66,6 +74,8 @@ type Msg
     | Fname String
     | Lname String
     | Subscribe
+    | SubscriptionRes (Result Http.Error Subscription)
+    | CloseModal
 
 
 type alias Model =
@@ -73,12 +83,20 @@ type alias Model =
     , email : String
     , fname : String
     , lname : String
+    , message : String
+    }
+
+
+type alias Subscription =
+    { status : String
+    , fname : String
+    , email : String
     }
 
 
 initModel : Model
 initModel =
-    Model False "" "" ""
+    Model False "" "" "" ""
 
 
 createNavItem : String -> Html.Html Msg
@@ -91,13 +109,26 @@ createNavItem item =
         ]
 
 
-sendSubscription : Model -> Model
-sendSubscription model =
-    { modal = False
-    , fname = ""
-    , lname = ""
-    , email = ""
-    }
+subscribtionRequest : Model -> Http.Request Subscription
+subscribtionRequest model =
+    Http.post (frontendUrl ++ "/subscribe") (Http.jsonBody (encodePayload model)) decodeSubscription
+
+
+encodePayload : Model -> Encode.Value
+encodePayload { email, fname, lname } =
+    Encode.object
+        [ ( "email", (Encode.string email) )
+        , ( "fname", (Encode.string fname) )
+        , ( "lname", (Encode.string lname) )
+        ]
+
+
+decodeSubscription : Decoder Subscription
+decodeSubscription =
+    decode Subscription
+        |> required "status" string
+        |> required "fname" string
+        |> required "email" string
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,7 +147,53 @@ update msg model =
             ( { model | email = email }, Cmd.none )
 
         Subscribe ->
-            ( sendSubscription model, Cmd.none )
+            ( model, Http.send SubscriptionRes (subscribtionRequest model) )
+
+        SubscriptionRes (Ok res) ->
+            ( { model
+                | message = "Successfully Subscribed"
+              }
+            , pauseThen CloseModal
+            )
+
+        SubscriptionRes (Err err) ->
+            ( { model | message = stringifyError err }, Cmd.none )
+
+        CloseModal ->
+            ( { model
+                | modal = False
+                , message = ""
+                , email = ""
+                , fname = ""
+                , lname = ""
+              }
+            , Cmd.none
+            )
+
+
+pauseThen : Msg -> Cmd Msg
+pauseThen msg =
+    Process.sleep (2 * Time.second)
+        |> Task.perform (\_ -> msg)
+
+
+stringifyError : Http.Error -> String
+stringifyError err =
+    case err of
+        BadUrl msg ->
+            "Failed. BadUrl" ++ msg
+
+        Timeout ->
+            "Failed. Subscription service took too long to respond"
+
+        NetworkError ->
+            "Failed. Something is wrong with the connection to the network"
+
+        BadStatus res ->
+            "Failed. Something is wrong"
+
+        BadPayload msg res ->
+            "Failed. Something is wrong with these values"
 
 
 address : Html.Html Msg
@@ -145,7 +222,7 @@ modal model =
                 [ classes [ bg_white, flex, flex_column, justify_between ]
                 , classList [ ( "modal-box", True ) ]
                 ]
-                [ div [ classes [ fr, pa2, tr ], onClick Modal ] [ text "close" ]
+                [ div [ classes [ fr, pa2, tr ], onClick CloseModal ] [ text "close" ]
                 , div [ classes [ flex, flex_column ] ]
                     [ input
                         [ name "fname"
@@ -169,6 +246,10 @@ modal model =
                         ]
                         []
                     ]
+                , if model.message /= "" then
+                    div [ classes [ pa3, tc ] ] [ text model.message ]
+                  else
+                    div [] []
                 , div
                     [ classList [ ( "double_b_btns", True ) ]
                     , classes [ pb1 ]
@@ -203,12 +284,17 @@ view model =
                 , div [ classes [ fl, w_100, w_50_ns ] ]
                     [ div [ classes [ fr_ns, pv6, pb0_ns, pt0_ns, pr3_ns ] ]
                         [ div [ classList [ ( "double_b_btns", True ) ], onClick Modal ] [ text "Subscribe" ]
-                        , div [ classList [ ( "double_b_btns", True ) ] ] [ text "Follow Us" ]
+                        , Html.a
+                            [ href "https://twitter.com/intent/follow?screen_name=ChrisMusForum"
+                            , classes [ link ]
+                            ]
+                            [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Follow Us" ]
+                            ]
                         ]
                     ]
                 ]
             ]
         , div [ classes [ cf, db, pb1, center ] ]
-            [ Html.small [ classes [ tc, white ] ] [ text "Company Registration 5461960 | Charity Registration 1114793" ]
+            [ Html.small [ classes [ f7, tc, white ] ] [ text "Company Registration 5461960 | Charity Registration 1114793" ]
             ]
         ]

@@ -8,6 +8,10 @@ body {
   font-family: 'Muli', sans-serif;
 }
 
+main {
+  padding-top: 5rem;
+}
+
 .feature-font {
   font-family: 'Libre Baskerville', serif;
 }

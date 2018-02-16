@@ -70,6 +70,7 @@ type alias FooterModel =
     , fname : String
     , lname : String
     , email : String
+    , message : String
     }
 
 
@@ -108,6 +109,7 @@ decodeFooterModel =
         |> required "fname" string
         |> required "lname" string
         |> required "email" string
+        |> required "message" string
 
 
 pageRequest : Operation Query Variables
@@ -171,6 +173,7 @@ viewPage model =
             , node "link" [ href "/style.css", rel "stylesheet" ] []
             , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
             , node "title" [] [ text model.title ]
+            , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
             ]
         , node "body"
             [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
@@ -185,6 +188,6 @@ view : Model -> Html.Html Msg
 view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
-        , div [ setInnerHtml model.content ] []
+        , node "main" [ setInnerHtml model.content ] []
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]
