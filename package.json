@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "node ./bin/main.js",
-    "copy": "rsync -a public/* dist/",
+    "copy": "cp -R public/* dist/",
     "make": "elm-make ./elm/Home.elm --output ./dist/bundle.js",
     "serve": "node server.js",
     "start": "npm run build && npm run copy && npm run serve",
