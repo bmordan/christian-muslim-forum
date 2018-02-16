@@ -8,8 +8,9 @@ import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, 
 import Json.Decode.Pipeline exposing (decode, required, optional)
 import Helpers exposing (setInnerHtml)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Config exposing (graphqlEndpoint)
+import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
+import Footer
 
 
 main : Program Never Model Msg
@@ -24,16 +25,26 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model Header.initModel "" "", sendRequest )
+    let
+        model =
+            { headerModel = Header.initModel
+            , footerModel = Footer.initModel
+            , title = ""
+            , content = ""
+            }
+    in
+        ( model, sendRequest )
 
 
 type Msg
     = GotContent (Result Error Data)
     | HeaderMsg Header.Msg
+    | FooterMsg Footer.Msg
 
 
 type alias Model =
     { headerModel : Header.Model
+    , footerModel : Footer.Model
     , title : String
     , content : String
     }
@@ -54,6 +65,15 @@ type alias HeaderModel =
     }
 
 
+type alias FooterModel =
+    { modal : Bool
+    , fname : String
+    , lname : String
+    , email : String
+    , message : String
+    }
+
+
 decodeData : Decoder Data
 decodeData =
     decode Data
@@ -71,6 +91,7 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" decodeHeaderModel
+        |> required "footerModel" decodeFooterModel
         |> required "title" string
         |> required "content" string
 
@@ -79,6 +100,16 @@ decodeHeaderModel : Decoder HeaderModel
 decodeHeaderModel =
     decode HeaderModel
         |> required "scrollLeft" bool
+
+
+decodeFooterModel : Decoder FooterModel
+decodeFooterModel =
+    decode FooterModel
+        |> required "modal" bool
+        |> required "fname" string
+        |> required "lname" string
+        |> required "email" string
+        |> required "message" string
 
 
 pageRequest : Operation Query Variables
@@ -124,6 +155,13 @@ update msg model =
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
 
+        FooterMsg subMsg ->
+            let
+                ( updatedFooterModel, footerCmd ) =
+                    Footer.update subMsg model.footerModel
+            in
+                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
+
 
 viewPage : Model -> Html.Html Msg
 viewPage model =
@@ -135,9 +173,10 @@ viewPage model =
             , node "link" [ href "/style.css", rel "stylesheet" ] []
             , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
             , node "title" [] [ text model.title ]
+            , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
             ]
         , node "body"
-            []
+            [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
             [ div [ id "elm-root" ] [ view model ]
             , node "script" [ src "bundle.js" ] []
             , node "script" [ id "elm-js" ] []
@@ -149,5 +188,6 @@ view : Model -> Html.Html Msg
 view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
-        , div [ setInnerHtml model.content ] []
+        , node "main" [ setInnerHtml model.content ] []
+        , Html.map FooterMsg (Footer.view model.footerModel)
         ]
