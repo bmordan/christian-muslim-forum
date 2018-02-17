@@ -19,7 +19,6 @@ main {
 }
 
 .header nav {
-  justify-content: start;
   padding-left: 145px;
 }
 
@@ -90,8 +89,8 @@ main {
 .header-img {
   position: absolute;
   width: 160px;
-  left: -20px;
-  top: -50px;
+  left: -29px;
+  top: -57px;
   border: solid 2px var(--cmf-green);
   border-radius: 50%;
 }

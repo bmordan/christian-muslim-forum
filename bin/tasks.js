@@ -113,19 +113,25 @@ function formatContact ({pageBy, people}) {
   return formatted
 }
 
+const arrayOfTags = pipe(
+  prop('edges')
+  , map(path(['node', 'slug']))
+)
+
+const getFaith = pipe(
+  arrayOfTags
+  , filter(contains(__, ['christian', 'muslim']))
+  , head
+)
+
 function formatPerson (people, {node}) {
   const { title, content, featuredImage, categories } = node
-  const getFaith = pipe(
-    prop('edges')
-    , map(path(['node', 'slug']))
-    , filter(contains(__, ['christian', 'muslim']))
-    , head
-  )
   const person = {
     name: title,
     bio: content,
     avatar: prop('sourceUrl', featuredImage),
-    faith: getFaith(categories)
+    faith: getFaith(categories),
+    tags: arrayOfTags(categories)
   }
   return append(person, people)
 }

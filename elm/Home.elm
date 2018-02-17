@@ -17,6 +17,7 @@ import Tachyons.Classes
         ( center
         , mw7
         , lh_copy
+        , ph3
         )
 
 
@@ -197,7 +198,7 @@ view model =
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , node "main"
             [ setInnerHtml model.content
-            , classes [ center, mw7, lh_copy ]
+            , classes [ center, mw7, lh_copy, ph3 ]
             ]
             []
         , Html.map FooterMsg (Footer.view model.footerModel)

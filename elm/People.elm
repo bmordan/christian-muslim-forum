@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt, optional)
-import Helpers exposing (setInnerHtml)
+import Helpers exposing (setInnerHtml, slugToTitle)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -17,11 +17,15 @@ import Tachyons.Classes
         ( flex
         , flex_auto
         , flex_none
+        , flex_column
         , justify_start
+        , justify_between
         , items_center
         , items_start
         , center
         , mw7
+        , mb6
+        , mt4
         , ph3
         , pa3
         , pr2
@@ -146,6 +150,7 @@ type alias Person =
     , bio : String
     , avatar : String
     , faith : String
+    , tags : List String
     }
 
 
@@ -223,6 +228,7 @@ decodePerson =
         |> required "bio" string
         |> required "avatar" string
         |> required "faith" string
+        |> required "tags" (Decode.list string)
 
 
 decodeHeaderModel : Decoder HeaderModel
@@ -313,13 +319,44 @@ createPerson { title, content, featuredImage, categories } =
 
         faith =
             findFaith categories.edges
+
+        tags =
+            List.map (\{ node } -> node.slug) categories.edges
     in
-        Person name bio avatar faith
+        Person name bio avatar faith tags
 
 
 createPeopleList : Edges -> List Person
 createPeopleList { edges } =
     List.map (\{ node } -> createPerson node) edges
+        |> orderPeopleList
+
+
+withTag : String -> List Person -> List Person
+withTag tag people =
+    List.filter (\person -> (List.any (\t -> t == tag) person.tags)) people
+        |> List.map (\person -> { person | tags = [ tag ] })
+
+
+orderPeopleList : List Person -> List Person
+orderPeopleList people =
+    let
+        patron =
+            withTag "patron" people
+
+        presidents =
+            withTag "president" people
+
+        trustees =
+            withTag "trustee" people
+
+        contributors =
+            withTag "contributer" people
+
+        formers =
+            withTag "former-president" people
+    in
+        List.concat [ patron, presidents, trustees, contributors, formers ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -372,16 +409,23 @@ viewPage model =
         ]
 
 
+viewRoleFromTag : List String -> String
+viewRoleFromTag tags =
+    List.head tags
+        |> Maybe.withDefault "forum-supporter"
+        |> slugToTitle
+
+
 viewPerson : Person -> Html.Html Msg
 viewPerson person =
-    div []
+    div [ classes [ mb6, mt4 ] ]
         [ div [ classList [ ( "person", True ) ] ]
             [ if person.faith == "christian" then
                 viewChristianPerson person
               else
                 viewMuslimPerson person
             ]
-        , div [ classes [ db, pa3, mw7, center ], setInnerHtml person.bio ] []
+        , div [ classes [ db, pa3, mw7, mt4, center ], setInnerHtml person.bio ] []
         ]
 
 
@@ -397,12 +441,17 @@ viewChristianPerson person =
             , style [ ( "background-image", "url(" ++ person.avatar ++ ")" ) ]
             ]
             []
-        , div [ classes [ flex_auto ] ]
+        , div [ classes [ flex_auto, flex, flex_column, justify_between ] ]
             [ div
                 [ classes [ f4, pl2, pl3_ns ]
                 , classList [ ( "cmf-blue", True ) ]
                 ]
                 [ text person.name ]
+            , div
+                [ classes [ pl2, pl3_ns ]
+                , classList [ ( "cmf-blue", True ) ]
+                ]
+                [ text (viewRoleFromTag person.tags) ]
             ]
         , img [ src (frontendUrl ++ "/cross.svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
         ]
@@ -426,6 +475,11 @@ viewMuslimPerson person =
                 , classList [ ( "cmf-blue", True ) ]
                 ]
                 [ text person.name ]
+            , div
+                [ classes [ pr2, pr3_ns, tr ]
+                , classList [ ( "cmf-blue", True ) ]
+                ]
+                [ text (viewRoleFromTag person.tags) ]
             ]
         , div
             [ classes [ br_100, flex_none, nr4, mr0_ns ]

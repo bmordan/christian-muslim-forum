@@ -35,3 +35,15 @@ navItems =
     , "about"
     , "contact"
     ]
+
+
+slugToTitle : String -> String
+slugToTitle str =
+    String.split "-" str
+        |> String.join " "
+        |> capitalise
+
+
+capitalise : String -> String
+capitalise str =
+    (String.toUpper (String.left 1 str) ++ String.dropLeft 1 str)
