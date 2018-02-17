@@ -8,7 +8,7 @@ import Json.Encode as Encode
 import Dom exposing (Error)
 import Dom.Scroll exposing (toLeft, toRight)
 import Task
-import Helpers exposing (chev, navItems)
+import Helpers exposing (chev, navItems, capitalise)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -28,6 +28,7 @@ import Tachyons.Classes
         , overflow_x_scroll
         , link
         , dn_ns
+        , fr_ns
         , w_100
         )
 
@@ -73,7 +74,7 @@ createNavItem item =
         [ href ("/" ++ item)
         , classes [ pl2, white, link ]
         ]
-        [ Html.text (String.toUpper (String.left 1 item) ++ String.dropLeft 1 item)
+        [ Html.text (capitalise item)
         ]
 
 
@@ -126,7 +127,7 @@ view model =
             , Html.Attributes.id "header-nav"
             ]
             [ nav
-                [ classes [ flex_auto, flex, items_center, pv2 ]
+                [ classes [ flex, items_center, fr_ns, pv2 ]
                 ]
                 (List.map createNavItem navItems)
             ]
