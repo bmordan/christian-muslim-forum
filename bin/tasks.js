@@ -74,6 +74,35 @@ module.exports = [
     formatter: formatContact,
     make: "elm-make ./elm/Contact.elm --output ./dist/contact/bundle.js"
   },
+  {
+    moduleName: 'People',
+    distFolder: 'people',
+    query: `{
+      pageBy(uri: "people"){
+        content
+      }
+      people{
+        edges{
+          node{
+            title
+            content
+            featuredImage{
+              sourceUrl
+            }
+            categories{
+              edges{
+                node{
+                  slug
+                }
+              }
+            }
+          }
+        }
+      }
+    }`,
+    formatter: formatContact,
+    make: "elm-make ./elm/People.elm --output ./dist/people/bundle.js"
+  }
 ]
 
 function formatContact ({pageBy, people}) {
