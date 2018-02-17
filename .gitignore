@@ -5,3 +5,4 @@ dist/*
 .DS_Store
 elm/Config.elm
 .env
+docker-compose.yml

@@ -3,3 +3,6 @@ node_modules
 .elm-static-html
 npm-debug.log
 .gitignore
+.git
+LICENCE
+dist/*
