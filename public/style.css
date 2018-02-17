@@ -2,6 +2,7 @@
 :root {
   --cmf-green: #12745E;
   --cmf-white: #FBFBFB;
+  --cmf-blue: #6BABB5;
 }
 
 body {
@@ -9,7 +10,7 @@ body {
 }
 
 main {
-  padding-top: 5rem;
+  padding: 7rem 0;
 }
 
 .feature-font {
@@ -92,6 +93,26 @@ main {
   top: -50px;
   border: solid 2px var(--cmf-green);
   border-radius: 50%;
+}
+
+.person {
+  background-color: var(--cmf-white);
+  height: 99px;
+}
+
+.cmf-blue {
+  color: var(--cmf-blue);
+}
+
+.person .avatar {
+  background-position: center center;
+  background-size: cover;
+  width: 127px;
+  height: 127px;
+}
+
+.person .icon {
+  width: 57px;
 }
 
 @media screen and (min-width: 30rem) {

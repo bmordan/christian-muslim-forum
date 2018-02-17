@@ -263,12 +263,12 @@ modal model =
 view : Model -> Html.Html Msg
 view model =
     div
-        [ classes [ w_100, flex, flex_column, justify_between ]
+        [ classes [ w_100, flex, flex_column, justify_start ]
         , classList [ ( "bg_cmf_islamic", True ), ( "footer", True ) ]
         ]
         [ modal model
         , div
-            [ classes [ w_100, db ]
+            [ classes [ w_100, db, flex_auto ]
             , Html.Attributes.style [ ( "width", "100vw" ) ]
             , Html.Attributes.id "footer-nav"
             ]

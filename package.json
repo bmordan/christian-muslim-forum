@@ -2,10 +2,9 @@
   "scripts": {
     "build": "node ./bin/main.js",
     "copy": "cp -R public/* dist/",
-    "make": "elm-make ./elm/Home.elm --output ./dist/bundle.js",
     "serve": "node server.js",
-    "start": "npm run build && npm run copy && npm run serve",
-    "watch": "onchange elm/*.elm -- npm start"
+    "start": "npm run copy && npm run build && npm run serve",
+    "watch": "onchange './elm/*.elm' './public/*' './bin/*' -v -i -- npm start"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
