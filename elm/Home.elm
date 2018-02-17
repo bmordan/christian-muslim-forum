@@ -11,6 +11,13 @@ import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
 import Footer
+import Tachyons exposing (..)
+import Tachyons.Classes
+    exposing
+        ( center
+        , mw7
+        , lh_copy
+        )
 
 
 main : Program Never Model Msg
@@ -176,7 +183,7 @@ viewPage model =
             , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
             ]
         , node "body"
-            [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
+            []
             [ div [ id "elm-root" ] [ view model ]
             , node "script" [ src "bundle.js" ] []
             , node "script" [ id "elm-js" ] []
@@ -188,6 +195,10 @@ view : Model -> Html.Html Msg
 view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
-        , node "main" [ setInnerHtml model.content ] []
+        , node "main"
+            [ setInnerHtml model.content
+            , classes [ center, mw7, lh_copy ]
+            ]
+            []
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]
