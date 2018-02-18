@@ -12,6 +12,7 @@ const {
   , tap
   , map
   , head
+  , assoc
 } = require('ramda')
 
 module.exports = [
@@ -27,6 +28,7 @@ module.exports = [
     formatter: pipe(
       prop('pageBy')
       , pick(['title', 'content'])
+      , assoc('skip', false)
     ),
     make: "elm-make ./elm/Home.elm --output ./dist/bundle.js"
   },
