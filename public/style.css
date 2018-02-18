@@ -4,6 +4,7 @@
   --cmf-white: #FBFBFB;
   --cmf-blue: #6BABB5;
   --cmf-yellow: #B6B112;
+  --cmf-teal: #9BC4BB;
 }
 
 body {
@@ -13,6 +14,14 @@ body {
 main {
   padding: 7rem 0;
   min-height: 70vh;
+}
+
+.cmf-blue {
+  color: var(--cmf-blue);
+}
+
+.cmf-teal {
+  color: var(--cmf-teal);
 }
 
 .feature-font {
@@ -50,6 +59,11 @@ main {
   padding: .5rem;
   border: none;
   border-bottom: 2px solid var(--cmf-green);
+}
+
+.btns_teal {
+  border-color: var(--cmf-teal) !important;
+  color: var(--cmf-teal) !important;  
 }
 
 .double_b_btns {
@@ -100,10 +114,6 @@ main {
 .person {
   background-color: var(--cmf-white);
   height: 99px;
-}
-
-.cmf-blue {
-  color: var(--cmf-blue);
 }
 
 .person .avatar {
