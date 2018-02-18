@@ -1,7 +1,7 @@
 module Home exposing (..)
 
-import Html exposing (text, div, node)
-import Html.Attributes exposing (href, src, id, content, rel, name)
+import Html exposing (text, div, node, img)
+import Html.Attributes exposing (href, src, id, content, rel, name, classList, style)
 import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
@@ -9,6 +9,7 @@ import Json.Decode.Pipeline exposing (decode, required, optional)
 import Helpers exposing (setInnerHtml)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
+import Slides exposing (slides)
 import Header
 import Footer
 import Tachyons exposing (..)
@@ -18,6 +19,15 @@ import Tachyons.Classes
         , mw7
         , lh_copy
         , ph3
+        , tc
+        , w4
+        , w_60_ns
+        , pt3
+        , mt7
+        , mb7
+        , mt3
+        , relative
+        , absolute
         )
 
 
@@ -39,6 +49,7 @@ init =
             , footerModel = Footer.initModel
             , title = ""
             , content = ""
+            , skip = False
             }
     in
         ( model, sendRequest )
@@ -48,6 +59,7 @@ type Msg
     = GotContent (Result Error Data)
     | HeaderMsg Header.Msg
     | FooterMsg Footer.Msg
+    | Skip
 
 
 type alias Model =
@@ -55,6 +67,7 @@ type alias Model =
     , footerModel : Footer.Model
     , title : String
     , content : String
+    , skip : Bool
     }
 
 
@@ -102,6 +115,7 @@ decodeModel =
         |> required "footerModel" decodeFooterModel
         |> required "title" string
         |> required "content" string
+        |> required "skip" bool
 
 
 decodeHeaderModel : Decoder HeaderModel
@@ -170,6 +184,9 @@ update msg model =
             in
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
+        Skip ->
+            ( { model | skip = True }, Cmd.none )
+
 
 viewPage : Model -> Html.Html Msg
 viewPage model =
@@ -192,14 +209,49 @@ viewPage model =
         ]
 
 
+viewSlide : ( String, String ) -> Html.Html Msg
+viewSlide slide =
+    div [ classes [ ph3 ] ]
+        [ div [ classes [ tc, mt7 ] ]
+            [ img
+                [ src (Tuple.first slide)
+                , classes [ w4 ]
+                ]
+                []
+            ]
+        , div
+            [ classes [ center, tc, w_60_ns, mb7, mt3 ]
+            , classList [ ( "cmf-teal", True ) ]
+            ]
+            [ text (Tuple.second slide) ]
+        ]
+
+
 view : Model -> Html.Html Msg
 view model =
-    div []
-        [ Html.map HeaderMsg (Header.view model.headerModel)
-        , node "main"
-            [ setInnerHtml model.content
-            , classes [ center, mw7, lh_copy, ph3 ]
+    let
+        skip =
+            if model.skip then
+                Tachyons.Classes.dn
+            else
+                Tachyons.Classes.db
+    in
+        div []
+            [ Html.map HeaderMsg (Header.view model.headerModel)
+            , node "main"
+                [ classes [ center, mw7, lh_copy, ph3 ]
+                ]
+                [ div [ classes [ skip, relative ] ]
+                    [ div
+                        [ onClick Skip
+                        , classList [ ( "double_b_btns", True ), ( "btns_teal", True ) ]
+                        , classes [ tc, center, absolute ]
+                        , style [ ( "top", "50vh" ) ]
+                        ]
+                        [ text "Skip Intro" ]
+                    , div [ style [ ( "margin-top", "-16rem" ) ] ] (List.map viewSlide slides)
+                    ]
+                , div [ setInnerHtml model.content ] []
+                ]
+            , Html.map FooterMsg (Footer.view model.footerModel)
             ]
-            []
-        , Html.map FooterMsg (Footer.view model.footerModel)
-        ]
