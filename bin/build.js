@@ -46,6 +46,7 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
   const writeJs = () => {
     const child = exec(make)
     return promiseFromChildProcess(child)
+      .catch(err => console.error(err))
   }
 
 

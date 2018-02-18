@@ -102,8 +102,49 @@ module.exports = [
     }`,
     formatter: formatContact,
     make: "elm-make ./elm/People.elm --output ./dist/people/bundle.js"
+  },
+  {
+    moduleName: 'Articles',
+    distFolder: 'articles',
+    query: `{
+      posts(first: 4, after: null) {
+        pageInfo{
+          hasNextPage
+          endCursor
+        }
+        edges{
+          node{
+            slug
+            title
+            excerpt
+            featuredImage{
+              sourceUrl
+            }
+            author{
+              name
+              avatar{
+                url
+              }
+            }
+            commentCount
+          }
+        }
+      }
+    }`,
+    formatter: formatAtricles,
+    make: "elm-make ./elm/Articles.elm --output ./dist/articles/bundle.js"
   }
 ]
+
+function formatAtricles ({posts}) {
+  const {pageInfo, edges} = posts
+  const formatted = {
+    hasNextPage: pageInfo.hasNextPage
+    , nextCursor: "null"
+    , posts : edges
+  }
+  return formatted
+}
 
 function formatContact ({pageBy, people}) {
   const formatted = {

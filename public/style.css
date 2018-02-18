@@ -3,6 +3,7 @@
   --cmf-green: #12745E;
   --cmf-white: #FBFBFB;
   --cmf-blue: #6BABB5;
+  --cmf-yellow: #B6B112;
 }
 
 body {
@@ -93,6 +94,7 @@ main {
   top: -57px;
   border: solid 2px var(--cmf-green);
   border-radius: 50%;
+  z-index: 1;
 }
 
 .person {
@@ -115,8 +117,64 @@ main {
   width: 57px;
 }
 
+.article-card {
+  width: 100%;
+}
+
+.article-card-img {
+  position: relative;
+  width: 100%;
+  height: 24rem;
+  background-position: center top;
+  background-size: cover;
+  display: inline-block;
+}
+
+.article-card-title {
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  height: 6rem;
+  color: var(--cmf-white);
+  background-color: rgba(182, 177, 18, 0.9);
+}
+
+.article-card-author {
+  background-color: var(--cmf-blue);
+  color: var(--cmf-white);
+  height: 42px;
+}
+
+.article-card-author img {
+  width: 57px;
+  margin-left: -10px;
+  position: relative;
+  z-index: 1;
+}
+
 @media screen and (min-width: 30rem) {
   .footer {
     min-height: 16rem;
+  }
+  .articles {
+    margin-left: .5rem;
+    margin-right: -0.15rem;
+  }
+  .article-card {
+    width: 49%;
+    display: inline-block;
+    vertical-align: top;
+    padding: .5rem;
+  }
+  .article-card-excerpt {
+    height: 9rem;
+    overflow-y: hidden;
+  }
+}
+
+@media screen and (min-width: 48rem) {
+  .article-card {
+    width: 33%;
   }
 }
