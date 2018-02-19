@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt, optional)
-import Helpers exposing (setInnerHtml, slugToTitle)
+import Helpers exposing (setInnerHtml, slugToTitle, viewPerson)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -412,21 +412,22 @@ viewPage model =
 viewRoleFromTag : List String -> String
 viewRoleFromTag tags =
     List.head tags
-        |> Maybe.withDefault "forum-supporter"
+        |> Maybe.withDefault "contributor"
         |> slugToTitle
 
 
-viewPerson : Person -> Html.Html Msg
-viewPerson person =
-    div [ classes [ mb6, mt4 ] ]
-        [ div [ classList [ ( "person", True ) ] ]
-            [ if person.faith == "christian" then
-                viewChristianPerson person
-              else
-                viewMuslimPerson person
-            ]
-        , div [ classes [ db, pa3, mw7, mt4, center ], setInnerHtml person.bio ] []
-        ]
+
+-- viewPerson : Person -> Html.Html Msg
+-- viewPerson person =
+--     div [ classes [ mb6, mt4 ] ]
+--         [ div [ classList [ ( "person", True ) ] ]
+--             [ if person.faith == "christian" then
+--                 viewChristianPerson person
+--               else
+--                 viewMuslimPerson person
+--             ]
+--         , div [ classes [ db, pa3, mw7, mt4, center ], setInnerHtml person.bio ] []
+--         ]
 
 
 viewChristianPerson : Person -> Html.Html Msg
@@ -500,7 +501,7 @@ view model =
             , if List.isEmpty model.people then
                 div [] []
               else
-                div [] (List.map viewPerson model.people)
+                div [] (List.map (viewPerson False) model.people)
             ]
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]

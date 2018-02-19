@@ -9,7 +9,7 @@ import Html.Attributes exposing (href, src, id, content, rel, name, classList, s
 import Html.Events exposing (onClick)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Helpers exposing (setInnerHtml)
+import Helpers exposing (setInnerHtml, forumIcon)
 import Header
 import Footer
 import Tachyons exposing (..)
@@ -52,6 +52,7 @@ import Tachyons.Classes
         , w_third_ns
         , pa1_ns
         , db
+        , f3
         )
 
 
@@ -364,14 +365,17 @@ renderPost { node } =
                 , classList [ ( "article-card-img", True ) ]
                 , href (frontendUrl ++ "/article.html#" ++ node.slug)
                 ]
-                [ div
-                    [ classes [ pa2, flex, items_center ]
-                    , classList [ ( "article-card-title", True ), ( "feature-font", True ) ]
-                    , setInnerHtml node.title
+                [ div [ classList [ ( "article-card-title", True ) ] ]
+                    [ div
+                        [ setInnerHtml node.title
+                        , classes [ pa3, f3 ]
+                        , classList [ ( "feature-font", True ) ]
+                        ]
+                        []
+                    , forumIcon node.commentCount
                     ]
-                    []
                 ]
-            , renderAuthor node.author
+            , viewAuthor node.author
             , div
                 [ setInnerHtml (excerpt ++ "...")
                 , classes [ pa3 ]
@@ -381,8 +385,8 @@ renderPost { node } =
             ]
 
 
-renderAuthor : Author -> Html.Html Msg
-renderAuthor author =
+viewAuthor : Author -> Html.Html Msg
+viewAuthor author =
     let
         url =
             Maybe.withDefault (frontendUrl ++ "/defaultImg.jpg") author.avatar.url

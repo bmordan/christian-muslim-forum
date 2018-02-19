@@ -1,10 +1,56 @@
 module Helpers exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (href, src)
+import Html exposing (text, div, img)
+import Html.Attributes exposing (href, src, classList, style)
+import Config exposing (frontendUrl)
 import Json.Encode as Encode
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Date
+import Date.Format as Format
+import Tachyons exposing (..)
+import Tachyons.Classes
+    exposing
+        ( db
+        , pa3
+        , mw7
+        , mt4
+        , center
+        , br_100
+        , nr4
+        , mr0_ns
+        , pr2
+        , pl2
+        , pr3
+        , pr3_ns
+        , pl3_ns
+        , tr
+        , f4
+        , f6
+        , flex
+        , flex_auto
+        , flex_none
+        , pl3
+        , justify_start
+        , items_center
+        , justify_between
+        , flex_column
+        , ml0_ns
+        , nl4
+        , mb6
+        , dn
+        , db_ns
+        , ph3
+        )
+
+
+type alias Person =
+    { name : String
+    , bio : String
+    , avatar : String
+    , faith : String
+    , tags : List String
+    }
 
 
 setInnerHtml : String -> Html.Attribute msg
@@ -30,7 +76,6 @@ chev =
 navItems : List String
 navItems =
     [ "articles"
-    , "events"
     , "people"
     , "about"
     , "contact"
@@ -47,3 +92,124 @@ slugToTitle str =
 capitalise : String -> String
 capitalise str =
     (String.toUpper (String.left 1 str) ++ String.dropLeft 1 str)
+
+
+forumIcon : Maybe Int -> Html.Html msg
+forumIcon commentCount =
+    if ((Maybe.withDefault 0 commentCount) < 1) then
+        div [] []
+    else
+        img
+            [ src (frontendUrl ++ "/illustrations/forum.svg")
+            , classList [ ( "article-forum-icon", True ) ]
+            ]
+            []
+
+
+trim160 : String -> String
+trim160 str =
+    ((String.slice 0 160 str) ++ "...")
+
+
+viewRoleFromTag : List String -> String
+viewRoleFromTag tags =
+    List.head tags
+        |> Maybe.withDefault "contributor"
+        |> slugToTitle
+
+
+viewPerson : Bool -> Person -> Html.Html msg
+viewPerson withBio person =
+    div [ classes [ mt4 ] ]
+        [ div [ classList [ ( "person", True ) ] ]
+            [ if (String.toLower person.faith) == "christian" then
+                viewChristianPerson withBio person
+              else
+                viewMuslimPerson withBio person
+            ]
+        , if withBio then
+            div [] []
+          else
+            div
+                [ classes [ db, pa3, mw7, mt4, mb6, center ]
+                , setInnerHtml person.bio
+                ]
+                []
+        ]
+
+
+viewChristianPerson : Bool -> Person -> Html.Html msg
+viewChristianPerson withBio person =
+    div
+        [ classes [ flex, items_center, justify_start, mw7, center ]
+        , classList [ ( "person", True ) ]
+        ]
+        [ div
+            [ classes [ br_100, flex_none, nl4, ml0_ns ]
+            , classList [ ( "avatar", True ) ]
+            , Html.Attributes.style [ ( "background-image", "url(" ++ person.avatar ++ ")" ) ]
+            ]
+            []
+        , div [ classes [ flex_auto, flex, flex_column, justify_between ] ]
+            [ div
+                [ classes [ f4, pl2, pl3_ns ]
+                ]
+                [ Html.text person.name ]
+            , if withBio then
+                div [ classes [ f6, dn, db_ns, ph3 ] ] [ Html.text (trim160 person.bio) ]
+              else
+                div
+                    [ classes [ pl2, pl3_ns ]
+                    ]
+                    [ Html.text (viewRoleFromTag person.tags) ]
+            ]
+        , img [ src (frontendUrl ++ "/cross.svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
+        ]
+
+
+viewMuslimPerson : Bool -> Person -> Html.Html msg
+viewMuslimPerson withBio person =
+    div
+        [ classes [ flex, items_center, justify_start, mw7, center ]
+        , classList [ ( "person", True ) ]
+        ]
+        [ img
+            [ src (frontendUrl ++ "/moon.svg")
+            , classes [ flex_none, pl3 ]
+            , classList [ ( "icon", True ) ]
+            ]
+            []
+        , div [ classes [ flex_auto ] ]
+            [ div
+                [ classes [ f4, pr2, pr3_ns, tr ]
+                ]
+                [ Html.text person.name ]
+            , if withBio then
+                div [ classes [ f6, dn, db_ns, ph3, tr ] ] [ Html.text (trim160 person.bio) ]
+              else
+                div
+                    [ classes [ pr2, pr3_ns, tr ]
+                    ]
+                    [ Html.text (viewRoleFromTag person.tags) ]
+            ]
+        , div
+            [ classes [ br_100, flex_none, nr4, mr0_ns ]
+            , classList [ ( "avatar", True ) ]
+            , Html.Attributes.style [ ( "background-image", "url(" ++ person.avatar ++ ")" ) ]
+            ]
+            []
+        ]
+
+
+formatDate : String -> String -> String
+formatDate formatter str =
+    let
+        date =
+            Date.fromString str
+    in
+        case date of
+            Ok val ->
+                Format.format formatter val
+
+            Err err ->
+                ""

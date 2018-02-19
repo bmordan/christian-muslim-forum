@@ -65,6 +65,8 @@ import Tachyons.Classes
         , tl_ns
         , bg_white
         , f7
+        , br2
+        , h4
         )
 
 
@@ -219,7 +221,7 @@ modal model =
             , classes [ flex, items_center, justify_center ]
             ]
             [ div
-                [ classes [ bg_white, flex, flex_column, justify_between ]
+                [ classes [ bg_white, flex, flex_column, justify_between, br2 ]
                 , classList [ ( "modal-box", True ) ]
                 ]
                 [ div [ classes [ fr, pa2, tr ], onClick CloseModal ] [ text "close" ]
@@ -251,11 +253,15 @@ modal model =
                   else
                     div [] []
                 , div
-                    [ classList [ ( "double_b_btns", True ) ]
-                    , classes [ pb1 ]
-                    , onClick Subscribe
+                    [ classList [ ( "bg_cmf_islamic", True ) ]
+                    , classes [ h4, flex, items_center, justify_center ]
                     ]
-                    [ text "Subscribe" ]
+                    [ div
+                        [ classList [ ( "double_b_btns", True ) ]
+                        , onClick Subscribe
+                        ]
+                        [ text "Subscribe" ]
+                    ]
                 ]
             ]
 
