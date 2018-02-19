@@ -30,7 +30,6 @@ chev =
 navItems : List String
 navItems =
     [ "articles"
-    , "events"
     , "people"
     , "about"
     , "contact"

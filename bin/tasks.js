@@ -1,3 +1,10 @@
+const {URL} = require('url')
+const location = new URL("http://christianmuslimforum.org")
+
+// this mocks the document.location object for server side rendering of Article page
+global.document = global.document || {}
+global.document.location = global.document.location || location
+
 const {
   pipe
   , __
@@ -135,8 +142,61 @@ module.exports = [
     }`,
     formatter: formatAtricles,
     make: "elm-make ./elm/Articles.elm --output ./dist/articles/bundle.js"
+  },
+  {
+    moduleName: 'Article',
+    distFolder: '.',
+    query: `{
+      postBy(slug: "invitation-to-jerusalem") {
+        id
+        title
+        slug
+        date
+        author {
+          name
+          description
+          avatar {
+            url
+          }
+        }
+        featuredImage{
+          sourceUrl
+        }
+        comments {
+          edges {
+            node {
+              content
+              date
+              author {
+                ... on User {
+                  name
+                  description
+                  avatar {
+                    url
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`,
+    formatter: formatArticle,
+    make: "elm-make ./elm/Article.elm --output ./dist/article.js"
   }
 ]
+
+function formatArticle ({postBy}) {
+  const {slug} = postBy
+  return {
+    post: null,
+    posts: [],
+    prev: null,
+    next: null,
+    slug: slug,
+    comments: []
+  }
+}
 
 function formatAtricles ({posts}) {
   const {pageInfo, edges} = posts

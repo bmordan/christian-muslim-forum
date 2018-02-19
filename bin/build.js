@@ -6,12 +6,13 @@ const fs = Promise.promisifyAll(require('fs'))
 const exec = Promise.promisifyAll(require('child_process').exec)
 const stringReplaceStream = require('string-replace-stream')
 const elmStaticHtml = require('elm-static-html-lib').elmStaticHtml
-const { pipe, pipeP, assoc } = require('ramda')
+const { pipe, pipeP, assoc, tap } = require('ramda')
 
 module.exports = function ({moduleName, distFolder, query, formatter, make}) {
   const elmRoot = path.join(__dirname, '..')
   const distRoot = path.join(__dirname, '..', 'dist')
-  const distPath = path.join(distRoot, distFolder, 'index.html')
+  const fileName = moduleName === "Article" ? "article.html" : "index.html"
+  const distPath = path.join(distRoot, distFolder, fileName)
 
   const formatResponse = (res) => {
     return pipe(
@@ -27,6 +28,7 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
 
   const generateHtml = (config) => {
     return elmStaticHtml(elmRoot, `${moduleName}.viewPage`, config)
+      .catch(err => console.error(err))
   }
 
   const writeFile = (generatedHtml) => {

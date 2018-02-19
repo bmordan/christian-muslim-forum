@@ -59,16 +59,6 @@ scrollToRight =
     Task.attempt (always Noop) <| toRight "header-nav"
 
 
-navItems : List String
-navItems =
-    [ "articles"
-    , "events"
-    , "people"
-    , "about"
-    , "contact"
-    ]
-
-
 createNavItem : String -> Html.Html Msg
 createNavItem item =
     Html.a
