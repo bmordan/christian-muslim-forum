@@ -5,7 +5,7 @@ import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, 
 import Json.Decode.Pipeline exposing (decode, required, optional, requiredAt)
 import Http exposing (Error)
 import Html exposing (text, div, button, a, strong, img, span, p, node)
-import Html.Attributes exposing (href, src, style, id, content, rel, name)
+import Html.Attributes exposing (href, src, style, id, content, rel, name, classList)
 import Html.Events exposing (onClick)
 import Dom exposing (Error)
 import Dom.Scroll exposing (toTop)
@@ -16,12 +16,14 @@ import Footer
 import List.Extra exposing (elemIndex, getAt)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Helpers exposing (setInnerHtml)
+import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
         ( pa2
+        , pa3
         , pt2
+        , pt3
         , flex
         , justify_end
         , justify_start
@@ -34,6 +36,8 @@ import Tachyons.Classes
         , bg_dark_gray
         , white
         , f3
+        , f5
+        , f6
         , overflow_y_scroll
         , mb4
         , h2
@@ -43,6 +47,8 @@ import Tachyons.Classes
         , center
         , ph3
         , pb3
+        , pa0
+        , pl2
         )
 
 
@@ -129,8 +135,10 @@ type alias Post =
     { slug : String
     , title : String
     , content : String
+    , date : String
     , author : Author
     , featuredImage : Maybe FeaturedImage
+    , commentCount : Maybe Int
     , comments : Edges
     }
 
@@ -144,6 +152,16 @@ type alias Author =
     { name : String
     , bio : String
     , avatar : String
+    , faith : String
+    }
+
+
+type alias Person =
+    { name : String
+    , bio : String
+    , avatar : String
+    , faith : String
+    , tags : List String
     }
 
 
@@ -212,8 +230,10 @@ decodePost =
         |> required "slug" string
         |> required "title" string
         |> required "content" string
+        |> required "date" string
         |> required "author" decodeAuthor
         |> required "featuredImage" (nullable decodeFeaturedImage)
+        |> required "commentCount" (nullable int)
         |> required "comments" decodeEdges
 
 
@@ -229,6 +249,7 @@ decodeAuthor =
         |> required "name" string
         |> required "bio" string
         |> requiredAt [ "avatar", "url" ] string
+        |> required "faith" string
 
 
 decodeEdges : Decoder Edges
@@ -328,6 +349,7 @@ postQuery slug =
                 [ GraphQl.field "slug"
                 , GraphQl.field "title"
                 , GraphQl.field "content"
+                , GraphQl.field "date"
                 , GraphQl.field "author"
                     |> GraphQl.withSelectors
                         [ GraphQl.field "name"
@@ -337,11 +359,14 @@ postQuery slug =
                             |> GraphQl.withSelectors
                                 [ GraphQl.field "url"
                                 ]
+                        , GraphQl.field "nickname"
+                            |> GraphQl.withAlias "faith"
                         ]
                 , GraphQl.field "featuredImage"
                     |> GraphQl.withSelectors
                         [ GraphQl.field "sourceUrl"
                         ]
+                , GraphQl.field "commentCount"
                 , GraphQl.field "comments"
                     |> GraphQl.withSelectors
                         [ GraphQl.field "edges"
@@ -361,6 +386,8 @@ postQuery slug =
                                                             |> GraphQl.withSelectors
                                                                 [ GraphQl.field "url"
                                                                 ]
+                                                        , GraphQl.field "nickname"
+                                                            |> GraphQl.withAlias "faith"
                                                         ]
                                                 ]
                                         ]
@@ -519,25 +546,19 @@ update msg model =
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
 
-viewAuthor : Author -> Html.Html Msg
-viewAuthor author =
-    div [ classes [] ]
-        [ img [ src author.avatar, classes [] ] []
-        , div [ classes [] ]
-            [ strong [] [ text author.name ]
-            , p [] [ text author.bio ]
-            ]
-        ]
-
-
-viewFeaturedImage : Maybe FeaturedImage -> Html.Html Msg
+viewFeaturedImage : Maybe FeaturedImage -> String
 viewFeaturedImage featured =
     case featured of
         Just val ->
-            img [ src val.sourceUrl ] []
+            val.sourceUrl
 
         Nothing ->
-            img [ src (frontendUrl ++ "/defaultImg.jpg") ] []
+            "/defaultImg.jpg"
+
+
+createPerson : Author -> Person
+createPerson { name, bio, avatar, faith } =
+    { name = name, bio = bio, avatar = avatar, faith = faith, tags = [] }
 
 
 viewPost : Model -> Html.Html Msg
@@ -545,14 +566,27 @@ viewPost model =
     case model.post of
         Just post ->
             div [ Html.Attributes.id post.slug ]
-                [ viewFeaturedImage post.featuredImage
+                [ div
+                    [ style [ ( "background-image", "url(" ++ (viewFeaturedImage post.featuredImage) ++ ")" ) ]
+                    , classList [ ( "article-hero", True ) ]
+                    ]
+                    [ div [ classList [ ( "article-card-title", True ) ] ]
+                        [ div
+                            [ setInnerHtml post.title
+                            , classes [ pa3, f3 ]
+                            , classList [ ( "feature-font", True ) ]
+                            ]
+                            [ div [ classes [ f5 ] ] [ text (formatDate "%e %b '%y" post.date) ] ]
+                        , forumIcon post.commentCount
+                        ]
+                    ]
+                , div [ classList [ ( "article-person", True ) ] ] [ (viewPerson True (createPerson post.author)) ]
                 , div
-                    [ classes []
-                    , setInnerHtml post.title
+                    [ setInnerHtml post.content
+                    , classes [ pa3, mw7, center ]
+                    , classList [ ( "article-copy", True ) ]
                     ]
                     []
-                , viewAuthor post.author
-                , div [ setInnerHtml post.content, classes [] ] []
                 ]
 
         Nothing ->
@@ -563,25 +597,25 @@ viewPrevLink : Maybe String -> Html.Html Msg
 viewPrevLink postLink =
     case postLink of
         Just link ->
-            a [ Html.Attributes.href ("#" ++ link), classes [ flex_auto, justify_start ] ] [ text ("<- " ++ link) ]
+            a [ Html.Attributes.href ("#" ++ link) ] [ text ("<- " ++ link) ]
 
         Nothing ->
-            a [ Html.Attributes.href "/articles", classes [ flex_auto, justify_start ] ] [ text "<- back to articles" ]
+            a [ Html.Attributes.href "/articles" ] [ text "<- back to articles" ]
 
 
 viewNextLink : Maybe String -> Html.Html Msg
 viewNextLink postLink =
     case postLink of
         Just link ->
-            a [ Html.Attributes.href ("#" ++ link), classes [ justify_end ] ] [ text (link ++ " ->") ]
+            a [ Html.Attributes.href ("#" ++ link) ] [ text (link ++ " ->") ]
 
         Nothing ->
-            a [ Html.Attributes.href "/articles", classes [ justify_end ] ] [ text "back to articles ->" ]
+            a [ Html.Attributes.href "/articles" ] [ text "back to articles ->" ]
 
 
 viewLinks : Model -> Html.Html Msg
 viewLinks model =
-    div [ classes [ flex, h2 ] ]
+    div [ classes [ pt3 ] ]
         [ viewPrevLink model.prev
         , viewNextLink model.next
         ]
@@ -592,15 +626,18 @@ viewComments { comments } =
     if List.isEmpty comments then
         div [] []
     else
-        div [] (List.map viewComment comments)
+        div [ classList [ ( "article-person", True ) ] ] (List.map viewComment comments)
 
 
 viewComment : Node -> Html.Html Msg
 viewComment { node } =
     div []
-        [ viewAuthor node.author
-        , div [ setInnerHtml node.content, classes [ pa2 ] ] []
-        , div [ classes [ pt2, tr ] ] [ text node.date ]
+        [ viewPerson True (createPerson node.author)
+        , div
+            [ setInnerHtml node.content
+            , classes [ mw7, center, ph3, pt3 ]
+            ]
+            []
         ]
 
 
@@ -639,7 +676,7 @@ view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , node "main"
-            [ classes [ ph3, pb3, center, mw7, lh_copy ]
+            [ classes [ lh_copy, pa0 ]
             ]
             [ viewPost model
             , viewComments model

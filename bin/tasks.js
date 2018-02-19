@@ -162,6 +162,7 @@ module.exports = [
         featuredImage{
           sourceUrl
         }
+        commentCount
         comments {
           edges {
             node {
@@ -194,6 +195,7 @@ function formatArticle ({postBy}) {
     prev: null,
     next: null,
     slug: slug,
+    commentCount: null,
     comments: []
   }
 }
