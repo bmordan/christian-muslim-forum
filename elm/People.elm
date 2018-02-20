@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt, optional)
-import Helpers exposing (setInnerHtml, slugToTitle, viewPerson)
+import Helpers exposing (setInnerHtml, slugToTitle, viewPerson, head)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -392,14 +392,7 @@ viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ node "head"
-            []
-            [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
-            , node "link" [ href "/style.css", rel "stylesheet" ] []
-            , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
-            , node "title" [] [ text "Our People" ]
-            , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
-            ]
+        [ head "Our People"
         , node "body"
             [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
             [ div [ id "elm-root" ] [ view model ]
@@ -414,20 +407,6 @@ viewRoleFromTag tags =
     List.head tags
         |> Maybe.withDefault "contributor"
         |> slugToTitle
-
-
-
--- viewPerson : Person -> Html.Html Msg
--- viewPerson person =
---     div [ classes [ mb6, mt4 ] ]
---         [ div [ classList [ ( "person", True ) ] ]
---             [ if person.faith == "christian" then
---                 viewChristianPerson person
---               else
---                 viewMuslimPerson person
---             ]
---         , div [ classes [ db, pa3, mw7, mt4, center ], setInnerHtml person.bio ] []
---         ]
 
 
 viewChristianPerson : Person -> Html.Html Msg

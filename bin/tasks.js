@@ -1,5 +1,6 @@
 const {URL} = require('url')
 const location = new URL("http://christianmuslimforum.org")
+const nodepath = require('path')
 
 // this mocks the document.location object for server side rendering of Article page
 global.document = global.document || {}
@@ -37,7 +38,7 @@ module.exports = [
       , pick(['title', 'content'])
       , assoc('skip', false)
     ),
-    make: "elm-make ./elm/Home.elm --output ./dist/bundle.js"
+    make: `elm-make ./elm/Home.elm --output ./dist/bundle.js --yes`
   },
   {
     moduleName: 'About',
@@ -52,7 +53,7 @@ module.exports = [
       prop('pageBy')
       , pick(['content'])
     ),
-    make: "elm-make ./elm/About.elm --output ./dist/about/bundle.js"
+    make: "elm-make ./elm/About.elm --output ./dist/about/bundle.js --yes"
   },
   {
     moduleName: 'Contact',
@@ -81,7 +82,7 @@ module.exports = [
       }
     }`,
     formatter: formatContact,
-    make: "elm-make ./elm/Contact.elm --output ./dist/contact/bundle.js"
+    make: "elm-make ./elm/Contact.elm --output ./dist/contact/bundle.js --yes"
   },
   {
     moduleName: 'People',
@@ -110,7 +111,7 @@ module.exports = [
       }
     }`,
     formatter: formatContact,
-    make: "elm-make ./elm/People.elm --output ./dist/people/bundle.js"
+    make: "elm-make ./elm/People.elm --output ./dist/people/bundle.js --yes"
   },
   {
     moduleName: 'Articles',
@@ -141,7 +142,7 @@ module.exports = [
       }
     }`,
     formatter: formatAtricles,
-    make: "elm-make ./elm/Articles.elm --output ./dist/articles/bundle.js"
+    make: "elm-make ./elm/Articles.elm --output ./dist/articles/bundle.js --yes"
   },
   {
     moduleName: 'Article',
@@ -183,7 +184,7 @@ module.exports = [
       }
     }`,
     formatter: formatArticle,
-    make: "elm-make ./elm/Article.elm --output ./dist/article.js"
+    make: "elm-make ./elm/Article.elm --output ./dist/article.js --yes"
   }
 ]
 

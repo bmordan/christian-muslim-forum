@@ -9,7 +9,7 @@ import Html.Attributes exposing (href, src, id, content, rel, name, classList, s
 import Html.Events exposing (onClick)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Helpers exposing (setInnerHtml, forumIcon)
+import Helpers exposing (setInnerHtml, forumIcon, head)
 import Header
 import Footer
 import Tachyons exposing (..)
@@ -428,14 +428,7 @@ viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ node "head"
-            []
-            [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
-            , node "link" [ href "/style.css", rel "stylesheet" ] []
-            , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
-            , node "title" [] [ text "Latest Articles" ]
-            , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
-            ]
+        [ head "Latests Articles"
         , node "body"
             []
             [ div [ id "elm-root" ] [ view model ]

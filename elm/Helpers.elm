@@ -1,7 +1,7 @@
 module Helpers exposing (..)
 
 import Html exposing (text, div, img)
-import Html.Attributes exposing (href, src, classList, style)
+import Html.Attributes exposing (href, src, id, content, rel, name, classList, style, httpEquiv)
 import Config exposing (frontendUrl)
 import Json.Encode as Encode
 import Svg exposing (..)
@@ -109,6 +109,19 @@ forumIcon commentCount =
 trim160 : String -> String
 trim160 str =
     ((String.slice 0 160 str) ++ "...")
+
+
+head : String -> Html.Html msg
+head title =
+    node "head"
+        []
+        [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
+        , node "link" [ href "/style.css", rel "stylesheet" ] []
+        , node "meta" [ Html.Attributes.name "viewport", content "width=device-width, initial-scale=1.0" ] []
+        , node "meta" [ httpEquiv "Content-Security-Policy", content "default-src 'self'; font-src 'self' data: fonts.gstatic.com;" ] []
+        , node "title" [] [ Html.text title ]
+        , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
+        ]
 
 
 viewRoleFromTag : List String -> String

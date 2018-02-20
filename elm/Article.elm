@@ -16,7 +16,7 @@ import Footer
 import List.Extra exposing (elemIndex, getAt)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate)
+import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate, head)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -654,14 +654,7 @@ viewPage model =
     in
         node "html"
             []
-            [ node "head"
-                []
-                [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
-                , node "link" [ href "/style.css", rel "stylesheet" ] []
-                , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
-                , node "title" [] [ text title ]
-                , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
-                ]
+            [ head "Article"
             , node "body"
                 [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
                 [ div [ id "elm-root" ] [ view model ]
