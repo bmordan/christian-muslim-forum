@@ -547,6 +547,7 @@ relatedPostsQuery : List String -> Operation Query Variables
 relatedPostsQuery tags =
     GraphQl.named "relatedPostsQuery"
         [ GraphQl.field "posts"
+            |> GraphQl.withArgument "first" (GraphQl.int 4)
             |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "tagSlugIn", (GraphQl.type_ (toString tags)) ) ])
             |> GraphQl.withSelectors
                 [ GraphQl.field "edges"
@@ -768,88 +769,37 @@ viewPost : Model -> Html.Html Msg
 viewPost model =
     case model.post of
         Just post ->
-            div [ Html.Attributes.id post.slug ]
-                [ div
-                    [ style [ ( "background-image", "url(" ++ (viewFeaturedImage post.featuredImage) ++ ")" ) ]
-                    , classList [ ( "article-hero", True ) ]
-                    ]
-                    [ div [ classList [ ( "article-card-title", True ) ] ]
-                        [ div
-                            [ setInnerHtml post.title
-                            , classes [ pa3, f3 ]
-                            , classList [ ( "feature-font", True ) ]
-                            ]
-                            [ div [ classes [ f5 ] ] [ text (formatDate "%e %b '%y" post.date) ] ]
-                        , forumIcon post.commentCount
-                        ]
-                    ]
-                , div [ classList [ ( "article-person", True ) ] ] [ (viewPerson True (createPerson post.author)) ]
-                , div
-                    [ setInnerHtml post.content
-                    , classes [ pa3, mw7, center ]
-                    , classList [ ( "article-copy", True ) ]
-                    ]
-                    []
-                ]
+            div [ setInnerHtml post.content ] []
 
         Nothing ->
             div [] []
 
 
-viewLink : Model -> String -> Html.Html Msg
-viewLink model direction =
-    let
-        modellink =
-            if direction == "right" then
-                model.next
-            else
-                model.prev
+viewPrevLink : Maybe String -> Html.Html Msg
+viewPrevLink postLink =
+    case postLink of
+        Just link ->
+            a [ Html.Attributes.href ("#" ++ link) ] [ text ("<- " ++ link) ]
 
-        label =
-            case modellink of
-                Just val ->
-                    slugToTitle val
+        Nothing ->
+            a [ Html.Attributes.href "/articles" ] [ text "<- back to articles" ]
 
-                Nothing ->
-                    "back to articles"
 
-        url =
-            case modellink of
-                Just val ->
-                    (frontendUrl ++ "/article.html#" ++ val)
+viewNextLink : Maybe String -> Html.Html Msg
+viewNextLink postLink =
+    case postLink of
+        Just link ->
+            a [ Html.Attributes.href ("#" ++ link) ] [ text (link ++ " ->") ]
 
-                Nothing ->
-                    (frontendUrl ++ "/articles")
-    in
-        if direction == "right" then
-            div [ classes [ pv3 ] ]
-                [ Html.a
-                    [ Html.Attributes.href url
-                    , classes [ link, flex, items_center, justify_between ]
-                    , classList [ ( "cmf-blue", True ) ]
-                    ]
-                    [ div [ classes [ dn, db_ns ] ] [ text label ]
-                    , div [ classes [ ph2 ] ] [ chevBlue ]
-                    ]
-                ]
-        else
-            div [ classes [ pv3 ] ]
-                [ Html.a
-                    [ Html.Attributes.href url
-                    , classes [ link, flex, items_center, justify_between ]
-                    , classList [ ( "cmf-blue", True ) ]
-                    ]
-                    [ div [ classes [ ph2 ], style [ ( "transform", "rotate(180deg)" ) ] ] [ chevBlue ]
-                    , div [ classes [ dn, db_ns ] ] [ text label ]
-                    ]
-                ]
+        Nothing ->
+            a [ Html.Attributes.href "/articles" ] [ text "back to articles ->" ]
 
 
 viewLinks : Model -> Html.Html Msg
 viewLinks model =
-    div [ classes [ pv3, flex, justify_between ] ]
-        [ viewLink model "left"
-        , viewLink model "right"
+    div [ classes [ pt3 ] ]
+        [ viewPrevLink model.prev
+        , viewNextLink model.next
         ]
 
 
@@ -909,7 +859,7 @@ viewRelatedPosts model =
                 [ text "Related Articles" ]
             , div
                 [ classList [ ( "bg_cmf_teal", True ) ]
-                , classes [ flex, flex_wrap ]
+                , classes []
                 ]
                 (List.map viewRelatedPost model.related)
             ]
@@ -917,40 +867,7 @@ viewRelatedPosts model =
 
 viewRelatedPost : RelatedPost -> Html.Html Msg
 viewRelatedPost post =
-    let
-        img =
-            case post.featuredImage of
-                Just val ->
-                    val.sourceUrl
-
-                Nothing ->
-                    (frontendUrl ++ "/defaultImg.jpg")
-    in
-        Html.a
-            [ href (frontendUrl ++ "/article.html#" ++ post.slug)
-            , classes [ link, br2 ]
-            , classList [ ( "bg_cmf_white", True ), ( "result", True ) ]
-            ]
-            [ div
-                [ style [ ( "background-image", "url(" ++ img ++ ")" ) ]
-                , classList [ ( "result-img", True ) ]
-                ]
-                []
-            , div [ classes [ flex, flex_column, justify_start ] ]
-                [ div
-                    [ setInnerHtml post.title
-                    , classes [ ph2 ]
-                    , classList [ ( "cmf-blue", True ) ]
-                    ]
-                    []
-                , div
-                    [ setInnerHtml (Helpers.trim160 post.excerpt)
-                    , classes [ ph2, f6 ]
-                    , classList [ ( "cmf-blue", True ) ]
-                    ]
-                    []
-                ]
-            ]
+    Html.a [ href ("#" ++ post.slug), classes [ pa2, db ] ] [ text post.title ]
 
 
 view : Model -> Html.Html Msg
