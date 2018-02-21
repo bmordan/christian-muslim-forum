@@ -13,25 +13,36 @@ import Task
 import Navigation
 import Header
 import Footer
+import Regex
 import List.Extra exposing (elemIndex, getAt)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate, head)
+import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate, head, chevBlue, slugToTitle)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
         ( pa2
         , pa3
+        , pt1
         , pt2
         , pt3
+        , ph2
+        , pb0
         , flex
+        , flex_wrap
+        , flex_column
         , justify_end
         , justify_start
+        , justify_between
         , flex_none
         , flex_auto
+        , ma2
         , mr2
+        , mv1
+        , mh2
         , br_100
         , items_center
+        , items_start
         , bg_light_gray
         , bg_dark_gray
         , white
@@ -49,6 +60,15 @@ import Tachyons.Classes
         , pb3
         , pa0
         , pl2
+        , pv3
+        , link
+        , dn
+        , db
+        , db_ns
+        , dib
+        , br2
+        , w_50
+        , v_top
         )
 
 
@@ -65,6 +85,7 @@ initModel : Navigation.Location -> Model
 initModel location =
     { post = Nothing
     , posts = []
+    , related = []
     , prev = Nothing
     , next = Nothing
     , slug = maybeSlug location
@@ -83,6 +104,7 @@ type Msg
     = Slug Navigation.Location
     | GotPosts (Result Http.Error PostsData)
     | GotPost (Result Http.Error PostBy)
+    | GotRelatedPosts (Result Http.Error RelatedPostsData)
     | Scroll
     | HeaderMsg Header.Msg
     | FooterMsg Footer.Msg
@@ -90,6 +112,32 @@ type Msg
 
 type alias PostsData =
     { posts : Posts
+    }
+
+
+type alias RelatedPostsData =
+    { posts : RelatedPosts
+    }
+
+
+type alias RelatedPosts =
+    { edges : List RelatedPostNode
+    }
+
+
+type alias RelatedPostNode =
+    { node : RelatedPost
+    }
+
+
+type alias RelatedPost =
+    { title : String
+    , slug : String
+    , excerpt : String
+    , date : String
+    , featuredImage : Maybe FeaturedImage
+    , commentCount : Maybe Int
+    , author : Author
     }
 
 
@@ -131,6 +179,21 @@ type alias PostBy =
     }
 
 
+type alias TagEdges =
+    { edges : List TagNode
+    }
+
+
+type alias TagNode =
+    { node : Tag
+    }
+
+
+type alias Tag =
+    { slug : String
+    }
+
+
 type alias Post =
     { slug : String
     , title : String
@@ -140,6 +203,7 @@ type alias Post =
     , featuredImage : Maybe FeaturedImage
     , commentCount : Maybe Int
     , comments : Edges
+    , tags : TagEdges
     }
 
 
@@ -168,6 +232,7 @@ type alias Person =
 type alias Model =
     { post : Maybe Post
     , posts : List PostLabel
+    , related : List RelatedPost
     , prev : Maybe String
     , next : Maybe String
     , slug : Maybe String
@@ -204,6 +269,36 @@ decodePosts =
         |> required "edges" (Decode.list decodePostLabel)
 
 
+decodeRelatedPostsData : Decoder RelatedPostsData
+decodeRelatedPostsData =
+    decode RelatedPostsData
+        |> required "posts" decodeRelatedPostsEdges
+
+
+decodeRelatedPostsEdges : Decoder RelatedPosts
+decodeRelatedPostsEdges =
+    decode RelatedPosts
+        |> required "edges" (Decode.list decodeRelatedPostNode)
+
+
+decodeRelatedPostNode : Decoder RelatedPostNode
+decodeRelatedPostNode =
+    decode RelatedPostNode
+        |> required "node" decodeRelatedPost
+
+
+decodeRelatedPost : Decoder RelatedPost
+decodeRelatedPost =
+    decode RelatedPost
+        |> required "title" string
+        |> required "slug" string
+        |> required "excerpt" string
+        |> required "date" string
+        |> required "featuredImage" (nullable decodeFeaturedImage)
+        |> required "commentCount" (nullable int)
+        |> required "author" decodeAuthor
+
+
 decodePageInfo : Decoder PageInfo
 decodePageInfo =
     decode PageInfo
@@ -235,6 +330,25 @@ decodePost =
         |> required "featuredImage" (nullable decodeFeaturedImage)
         |> required "commentCount" (nullable int)
         |> required "comments" decodeEdges
+        |> required "tags" decodeTagEdges
+
+
+decodeTagEdges : Decoder TagEdges
+decodeTagEdges =
+    decode TagEdges
+        |> required "edges" (Decode.list decodeTagNode)
+
+
+decodeTagNode : Decoder TagNode
+decodeTagNode =
+    decode TagNode
+        |> required "node" decodeTag
+
+
+decodeTag : Decoder Tag
+decodeTag =
+    decode Tag
+        |> required "slug" string
 
 
 decodeFeaturedImage : Decoder FeaturedImage
@@ -277,6 +391,7 @@ decodeModel =
     decode Model
         |> required "post" (nullable decodePost)
         |> required "posts" (Decode.list decodePostLabel)
+        |> required "related" (Decode.list decodeRelatedPost)
         |> required "prev" (nullable string)
         |> required "next" (nullable string)
         |> required "slug" (nullable string)
@@ -393,6 +508,16 @@ postQuery slug =
                                         ]
                                 ]
                         ]
+                , GraphQl.field "tags"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "edges"
+                            |> GraphQl.withSelectors
+                                [ GraphQl.field "node"
+                                    |> GraphQl.withSelectors
+                                        [ GraphQl.field "slug"
+                                        ]
+                                ]
+                        ]
                 ]
         ]
         |> GraphQl.withVariables []
@@ -410,6 +535,64 @@ postRequest : String -> Cmd Msg
 postRequest slug =
     basePostRequest (postQuery slug) decodePostBy
         |> GraphQl.send GotPost
+
+
+stringifyTags : List String -> String
+stringifyTags tags =
+    toString tags
+        |> Regex.replace Regex.All (Regex.regex "\"") (\_ -> "'")
+
+
+relatedPostsQuery : List String -> Operation Query Variables
+relatedPostsQuery tags =
+    GraphQl.named "relatedPostsQuery"
+        [ GraphQl.field "posts"
+            |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "tagSlugIn", (GraphQl.type_ (toString tags)) ) ])
+            |> GraphQl.withSelectors
+                [ GraphQl.field "edges"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "node"
+                            |> GraphQl.withSelectors
+                                [ GraphQl.field "title"
+                                , GraphQl.field "slug"
+                                , GraphQl.field "excerpt"
+                                , GraphQl.field "date"
+                                , GraphQl.field "commentCount"
+                                , GraphQl.field "author"
+                                    |> GraphQl.withSelectors
+                                        [ GraphQl.field "name"
+                                        , GraphQl.field "description"
+                                            |> GraphQl.withAlias "bio"
+                                        , GraphQl.field "nickname"
+                                            |> GraphQl.withAlias "faith"
+                                        , GraphQl.field "avatar"
+                                            |> GraphQl.withSelectors
+                                                [ GraphQl.field "url"
+                                                ]
+                                        ]
+                                , GraphQl.field "featuredImage"
+                                    |> GraphQl.withSelectors
+                                        [ GraphQl.field "sourceUrl"
+                                        ]
+                                ]
+                        ]
+                ]
+        ]
+        |> GraphQl.withVariables []
+
+
+baseRelatedPostsRequest :
+    Operation Query Variables
+    -> Decoder RelatedPostsData
+    -> GraphQl.Request Query Variables RelatedPostsData
+baseRelatedPostsRequest =
+    GraphQl.query graphqlEndpoint
+
+
+relatedPostsRequest : List String -> Cmd Msg
+relatedPostsRequest tags =
+    baseRelatedPostsRequest (relatedPostsQuery tags) decodeRelatedPostsData
+        |> GraphQl.send GotRelatedPosts
 
 
 updatePosts : Model -> PostsData -> ( Model, Cmd Msg )
@@ -493,17 +676,25 @@ updatePost model postdata =
         newModel =
             { model
                 | post = Just postdata.postBy
-                , prev = maybeLink model subtract1
-                , next = maybeLink model add1
                 , comments = postdata.postBy.comments.edges
             }
     in
         newModel
 
 
+createRelatedPost : RelatedPostNode -> RelatedPost
+createRelatedPost { node } =
+    RelatedPost node.title node.slug node.excerpt node.date node.featuredImage node.commentCount node.author
+
+
 scrollToTop : Cmd Msg
 scrollToTop =
     Task.attempt (always Scroll) <| toTop "elm-root"
+
+
+createQueryTagString : TagEdges -> List String
+createQueryTagString { edges } =
+    List.map (\{ node } -> node.slug) edges
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -512,7 +703,7 @@ update msg model =
         Slug location ->
             let
                 slug =
-                    String.dropLeft 1 location.hash
+                    String.dropLeft 1 (Debug.log "hash" location.hash)
             in
                 ( { model | slug = maybeSlug location }, postRequest slug )
 
@@ -523,10 +714,22 @@ update msg model =
             ( model, Cmd.none )
 
         GotPost (Ok postdata) ->
-            ( updatePost model postdata, scrollToTop )
+            ( updatePost model postdata, relatedPostsRequest (createQueryTagString postdata.postBy.tags) )
 
         GotPost (Err err) ->
             ( model, Cmd.none )
+
+        GotRelatedPosts (Ok relatedposts) ->
+            ( { model
+                | related = (List.map createRelatedPost relatedposts.posts.edges)
+                , prev = maybeLink model subtract1
+                , next = maybeLink model add1
+              }
+            , scrollToTop
+            )
+
+        GotRelatedPosts (Err err) ->
+            ( model, scrollToTop )
 
         Scroll ->
             ( model, Cmd.none )
@@ -593,31 +796,60 @@ viewPost model =
             div [] []
 
 
-viewPrevLink : Maybe String -> Html.Html Msg
-viewPrevLink postLink =
-    case postLink of
-        Just link ->
-            a [ Html.Attributes.href ("#" ++ link) ] [ text ("<- " ++ link) ]
+viewLink : Model -> String -> Html.Html Msg
+viewLink model direction =
+    let
+        modellink =
+            if direction == "right" then
+                model.next
+            else
+                model.prev
 
-        Nothing ->
-            a [ Html.Attributes.href "/articles" ] [ text "<- back to articles" ]
+        label =
+            case modellink of
+                Just val ->
+                    slugToTitle val
 
+                Nothing ->
+                    "back to articles"
 
-viewNextLink : Maybe String -> Html.Html Msg
-viewNextLink postLink =
-    case postLink of
-        Just link ->
-            a [ Html.Attributes.href ("#" ++ link) ] [ text (link ++ " ->") ]
+        url =
+            case modellink of
+                Just val ->
+                    (frontendUrl ++ "/article.html#" ++ val)
 
-        Nothing ->
-            a [ Html.Attributes.href "/articles" ] [ text "back to articles ->" ]
+                Nothing ->
+                    (frontendUrl ++ "/articles")
+    in
+        if direction == "right" then
+            div [ classes [ pv3 ] ]
+                [ Html.a
+                    [ Html.Attributes.href url
+                    , classes [ link, flex, items_center, justify_between ]
+                    , classList [ ( "cmf-blue", True ) ]
+                    ]
+                    [ div [ classes [ dn, db_ns ] ] [ text label ]
+                    , div [ classes [ ph2 ] ] [ chevBlue ]
+                    ]
+                ]
+        else
+            div [ classes [ pv3 ] ]
+                [ Html.a
+                    [ Html.Attributes.href url
+                    , classes [ link, flex, items_center, justify_between ]
+                    , classList [ ( "cmf-blue", True ) ]
+                    ]
+                    [ div [ classes [ ph2 ], style [ ( "transform", "rotate(180deg)" ) ] ] [ chevBlue ]
+                    , div [ classes [ dn, db_ns ] ] [ text label ]
+                    ]
+                ]
 
 
 viewLinks : Model -> Html.Html Msg
 viewLinks model =
-    div [ classes [ pt3 ] ]
-        [ viewPrevLink model.prev
-        , viewNextLink model.next
+    div [ classes [ pv3, flex, justify_between ] ]
+        [ viewLink model "left"
+        , viewLink model "right"
         ]
 
 
@@ -664,6 +896,63 @@ viewPage model =
             ]
 
 
+viewRelatedPosts : Model -> Html.Html Msg
+viewRelatedPosts model =
+    if List.isEmpty model.related then
+        div [] []
+    else
+        div []
+            [ div
+                [ classes [ pa3, f3 ]
+                , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+                ]
+                [ text "Related Articles" ]
+            , div
+                [ classList [ ( "bg_cmf_teal", True ) ]
+                , classes [ flex, flex_wrap ]
+                ]
+                (List.map viewRelatedPost model.related)
+            ]
+
+
+viewRelatedPost : RelatedPost -> Html.Html Msg
+viewRelatedPost post =
+    let
+        img =
+            case post.featuredImage of
+                Just val ->
+                    val.sourceUrl
+
+                Nothing ->
+                    (frontendUrl ++ "/defaultImg.jpg")
+    in
+        Html.a
+            [ href (frontendUrl ++ "/article.html#" ++ post.slug)
+            , classes [ link, br2 ]
+            , classList [ ( "bg_cmf_white", True ), ( "result", True ) ]
+            ]
+            [ div
+                [ style [ ( "background-image", "url(" ++ img ++ ")" ) ]
+                , classList [ ( "result-img", True ) ]
+                ]
+                []
+            , div [ classes [ flex, flex_column, justify_start ] ]
+                [ div
+                    [ setInnerHtml post.title
+                    , classes [ ph2 ]
+                    , classList [ ( "cmf-blue", True ) ]
+                    ]
+                    []
+                , div
+                    [ setInnerHtml (Helpers.trim160 post.excerpt)
+                    , classes [ ph2, f6 ]
+                    , classList [ ( "cmf-blue", True ) ]
+                    ]
+                    []
+                ]
+            ]
+
+
 view : Model -> Html.Html Msg
 view model =
     div []
@@ -674,6 +963,7 @@ view model =
             [ viewPost model
             , viewComments model
             , viewLinks model
+            , viewRelatedPosts model
             ]
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]

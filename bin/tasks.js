@@ -193,6 +193,7 @@ function formatArticle ({postBy}) {
   return {
     post: null,
     posts: [],
+    related: [],
     prev: null,
     next: null,
     slug: slug,

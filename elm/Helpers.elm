@@ -73,6 +73,21 @@ chev =
         ]
 
 
+chevBlue : Svg.Svg msg
+chevBlue =
+    svg
+        [ width "8"
+        , height "20"
+        ]
+        [ Svg.path
+            [ d "M7.1 9.326l.365.242-.101.153.101.154-.364.242-5.718 8.604-.376-.25L6.82 9.72 1.007.971l.376-.25 5.718 8.605z"
+            , stroke "#6BABB5"
+            , fill "none"
+            ]
+            []
+        ]
+
+
 navItems : List String
 navItems =
     [ "articles"
