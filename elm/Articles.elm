@@ -12,6 +12,7 @@ import GraphQl exposing (Operation, Variables, Query, Named)
 import Helpers exposing (setInnerHtml, forumIcon, head)
 import Header
 import Footer
+import Search
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -432,6 +433,7 @@ viewPage model =
         , node "body"
             []
             [ div [ id "elm-root" ] [ view model ]
+            , div [ id "search" ] []
             , node "script" [ src "bundle.js" ] []
             , node "script" [ id "elm-js" ] []
             ]

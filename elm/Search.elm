@@ -6,7 +6,7 @@ import Html.Events exposing (onClick, onInput, onFocus)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt)
-import Helpers exposing (setInnerHtml, head)
+import Helpers exposing (setInnerHtml, head, onKeyDown)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Tachyons exposing (..)
@@ -52,6 +52,7 @@ type Msg
     | Search
     | AutoSearch String
     | Clear
+    | KeyDown Int
 
 
 type alias Model =
@@ -184,6 +185,15 @@ decodeAuthor =
         |> requiredAt [ "avatar", "url" ] string
 
 
+decodeModel : Decoder Model
+decodeModel =
+    decode Model
+        |> required "term" string
+        |> required "currentTerm" string
+        |> required "tags" (Decode.list decodeTag)
+        |> required "results" (Decode.list decodeSearchResult)
+
+
 tagsQuery : Operation Query Variables
 tagsQuery =
     GraphQl.named "tags"
@@ -311,13 +321,27 @@ update msg model =
             ( { model | term = str }, Cmd.none )
 
         Search ->
-            ( model, (sendSearchRequest "search" model.term) )
+            if (model.term /= "") then
+                ( model, (sendSearchRequest "search" model.term) )
+            else
+                ( model, Cmd.none )
 
         AutoSearch term ->
             ( { model | term = term }, (sendSearchRequest "tag" term) )
 
         Clear ->
             ( { model | term = "", results = [], currentTerm = "" }, Cmd.none )
+
+        KeyDown code ->
+            if (code == 13 && model.term /= "") then
+                ( model, (sendSearchRequest "search" model.term) )
+            else
+                ( model, Cmd.none )
+
+
+viewPage : Model -> Html.Html Msg
+viewPage model =
+    div [ id "search" ] [ view model ]
 
 
 viewSearchSuggestions : Tag -> Html.Html Msg
@@ -345,22 +369,42 @@ viewResultsHeading model =
         header =
             (toString resultsLength) ++ " search result" ++ plural ++ " for " ++ model.currentTerm
     in
-        div [ classes [ pa2 ] ] [ text header ]
+        div [] [ text header ]
 
 
 viewSearchResult : SearchResult -> Html.Html Msg
 viewSearchResult result =
-    div []
-        [ div [] [ text result.title ]
-        , div [ setInnerHtml result.excerpt ] []
-        ]
+    let
+        image =
+            case result.featuredImage of
+                Just val ->
+                    val.sourceUrl
+
+                Nothing ->
+                    (frontendUrl ++ "/defaultImg.jpg")
+
+        forum =
+            case result.commentCount of
+                Just count ->
+                    span [] [ img [ src (frontendUrl ++ "/forum.svg") ] [] ]
+
+                Nothing ->
+                    span [] []
+    in
+        Html.a [ href (frontendUrl ++ "/article.html#" ++ result.slug) ]
+            [ div [] [ text result.title ]
+            , div [] [ img [ src image ] [] ]
+            , div [] [ forum ]
+            , div [ setInnerHtml result.excerpt ] []
+            , div [] [ text ("by " ++ result.author.name) ]
+            ]
 
 
 view : Model -> Html.Html Msg
 view model =
     div []
         [ div []
-            [ input [ onInput Term, onFocus Clear, value model.term, classes [ pa2 ] ] []
+            [ input [ onInput Term, onKeyDown KeyDown, onFocus Clear, value model.term, classes [ pa2 ] ] []
             , img [ onClick Search, src (frontendUrl ++ "/search.svg") ] []
             ]
         , if List.isEmpty model.results then

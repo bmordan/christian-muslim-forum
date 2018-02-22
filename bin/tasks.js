@@ -21,7 +21,18 @@ const {
   , map
   , head
   , assoc
+  , objOf
 } = require('ramda')
+
+/*
+  0 home
+  1 About
+  2 Contact
+  3 People
+  4 Articles
+  5 article
+  6 search
+*/
 
 module.exports = [
   {
@@ -185,6 +196,22 @@ module.exports = [
     }`,
     formatter: formatArticle,
     make: "elm-make ./elm/Article.elm --output ./dist/article.js --yes"
+  },
+  {
+    moduleName: 'Search',
+    distFolder: 'search',
+    query: `{
+      tags(last: 20, where: {orderby: COUNT}){
+        edges{
+          node{
+            slug
+            count
+          }
+        }
+      }
+    }`,
+    formatter: formatSearch,
+    make: `elm-make ./elm/Search.elm --output ./dist/search.js --yes`
   }
 ]
 
@@ -241,4 +268,15 @@ function formatPerson (people, {node}) {
     tags: arrayOfTags(categories)
   }
   return append(person, people)
+}
+
+function formatSearch ({tags}) {
+  return pipe(
+   prop('edges')
+   , map(({node}) => ({slug: node.slug, count: node.count}))
+   , objOf('tags')
+   , assoc('term', "")
+   , assoc('currentTerm', "")
+   , assoc('results', [])
+ )(tags)
 }

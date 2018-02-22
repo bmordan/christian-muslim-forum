@@ -7,7 +7,7 @@ const {execSync} = require('child_process')
 const exec = Promise.promisifyAll(require('child_process').exec)
 const stringReplaceStream = require('string-replace-stream')
 const elmStaticHtml = require('elm-static-html-lib').elmStaticHtml
-const { pipe, pipeP, assoc, tap, apply } = require('ramda')
+const { pipe, pipeP, assoc, tap, apply, contains } = require('ramda')
 
 module.exports = function ({moduleName, distFolder, query, formatter, make}) {
   const elmRoot = path.join(__dirname, '..')
@@ -33,7 +33,10 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
   }
 
   const writeFile = (generatedHtml) => {
-    const elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`
+    let elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`
+    if (contains(moduleName, ['Articles'])) {
+      elmJsContent += `;Elm.Search.embed(document.getElementById("search"))`
+    }
     const html = generatedHtml.replace(`<script id="elm-js">`, `<script id="elm-js">${elmJsContent}`)
     fs.writeFileSync(distPath, html, "utf8")
     return html
