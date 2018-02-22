@@ -1,12 +1,12 @@
 module Home exposing (..)
 
 import Html exposing (text, div, node, img)
-import Html.Attributes exposing (href, src, id, content, rel, name, classList, style)
+import Html.Attributes exposing (href, src, id, content, rel, name, classList, style, httpEquiv)
 import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml)
+import Helpers exposing (setInnerHtml, head)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Slides exposing (slides)
@@ -192,14 +192,7 @@ viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ node "head"
-            []
-            [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
-            , node "link" [ href "/style.css", rel "stylesheet" ] []
-            , node "meta" [ name "viewport", content "width=device-width, initial-scale=1.0" ] []
-            , node "title" [] [ text model.title ]
-            , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
-            ]
+        [ head model.title
         , node "body"
             []
             [ div [ id "elm-root" ] [ view model ]
