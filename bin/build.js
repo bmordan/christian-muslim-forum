@@ -17,9 +17,10 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
 
   const formatResponse = (res) => {
     return pipe(
-        formatter
+       formatter
         , assoc('headerModel', {scrollLeft: false})
         , assoc('footerModel', {modal: false, fname: "", lname: "", email: "", message: ""})
+        , assoc('searchModel', {term: "", currentTerm: "", tags: [], results: []})
       )(res)
   }
 

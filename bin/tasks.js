@@ -24,15 +24,6 @@ const {
   , objOf
 } = require('ramda')
 
-/*
-  0 home
-  1 About
-  2 Contact
-  3 People
-  4 Articles
-  5 article
-  6 search
-*/
 
 module.exports = [
   {
@@ -40,15 +31,55 @@ module.exports = [
     distFolder: '.',
     query: `{
       pageBy(uri: "home") {
-        title
-        content
+            title
+            content
+          }
+      events(where: {status: FUTURE}){
+        edges{
+          node{
+            slug
+            title
+            excerpt
+            date
+            featuredImage{
+              sourceUrl
+            }
+          }
+        }
+      }
+      posts(first: 4, after: null) {
+            pageInfo{
+              hasNextPage
+              endCursor
+            }
+            edges{
+              node{
+                slug
+                title
+                excerpt
+                featuredImage{
+                  sourceUrl
+                }
+                author{
+                  name
+                  avatar{
+                    url
+                  }
+                }
+                commentCount
+              }
+            }
+          }
+      tags(last: 20, where: {orderby: COUNT}){
+        edges{
+          node{
+            slug
+            count
+          }
+        }
       }
     }`,
-    formatter: pipe(
-      prop('pageBy')
-      , pick(['title', 'content'])
-      , assoc('skip', false)
-    ),
+    formatter: formatHome,
     make: `elm-make ./elm/Home.elm --output ./dist/bundle.js --yes`
   },
   {
@@ -214,6 +245,23 @@ module.exports = [
     make: `elm-make ./elm/Search.elm --output ./dist/search.js --yes`
   }
 ]
+
+function formatHome ({pageBy, events, posts, tags}) {
+  const listEvent = events.edges.map(({node}) => {
+    const {title, slug, date, excerpt, featuredImage} = node
+    return {title, slug, date, excerpt, featuredImage}
+  })
+  const listArticle = posts.edges.map(({node}) => {
+    const {title, slug, excerpt, featuredImage, commentCount, author} = node
+    return {title, slug, excerpt, featuredImage, commentCount, author}
+  })
+
+  return {
+    title: pageBy.title
+    , content: pageBy.content
+    , events: listEvent
+  }
+}
 
 function formatArticle ({postBy}) {
   const {slug} = postBy

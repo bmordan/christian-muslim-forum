@@ -3,10 +3,10 @@ const tasks = require('./tasks')
 const { map } = require('ramda')
 
 // map(build, tasks)
-build(tasks[0])
-build(tasks[1])
-build(tasks[2])
-build(tasks[3])
-build(tasks[4])
-build(tasks[5])
-build(tasks[6])
+build(tasks[0]) // Home
+// build(tasks[1]) // About
+// build(tasks[2]) // Contact
+// build(tasks[3]) // People
+// build(tasks[4]) // Articles
+// build(tasks[5]) // Article
+// build(tasks[6]) // Search
