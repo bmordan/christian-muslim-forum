@@ -10,7 +10,7 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Dom exposing (Error)
 import Dom.Scroll exposing (toLeft, toRight)
 import Task
-import Helpers exposing (chev, navItems, capitalise)
+import Helpers exposing (chev, navItems, capitalise, createNavItem)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -66,23 +66,6 @@ scrollToLeft =
 scrollToRight : Cmd Msg
 scrollToRight =
     Task.attempt (always Noop) <| toRight "header-nav"
-
-
-createNavItem : String -> Html.Html Msg
-createNavItem item =
-    let
-        route =
-            if item == "home" then
-                ""
-            else
-                item
-    in
-        Html.a
-            [ href ("/" ++ route)
-            , classes [ pl2, white, link ]
-            ]
-            [ Html.text (capitalise item)
-            ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

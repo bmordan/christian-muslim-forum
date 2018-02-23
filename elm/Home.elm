@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head, formatDate, forumIcon)
+import Helpers exposing (setInnerHtml, head, formatDate, forumIcon, getFeaturedImageSrc)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Slides exposing (slides)
@@ -541,16 +541,6 @@ viewMoreBtn { articlesMore, articlesNext } =
             div [ classList [ ( "double_b_btns", True ) ] ] [ text "no more articles" ]
 
 
-getFeatruedImageSrc : Maybe FeaturedImage -> String
-getFeatruedImageSrc featuredImage =
-    case featuredImage of
-        Just val ->
-            val.sourceUrl
-
-        Nothing ->
-            (frontendUrl ++ "/defaultImg.jpg")
-
-
 viewAuthor : Author -> Html.Html Msg
 viewAuthor author =
     let
@@ -570,7 +560,7 @@ viewEvent : Event -> Html.Html Msg
 viewEvent { title, slug, excerpt, date, featuredImage } =
     let
         image =
-            getFeatruedImageSrc featuredImage
+            getFeaturedImageSrc featuredImage
     in
         Html.a
             [ href (frontendUrl ++ "/events/index.html#" ++ slug)
@@ -602,7 +592,7 @@ viewArticle : Article -> Html.Html Msg
 viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
     let
         image =
-            getFeatruedImageSrc featuredImage
+            getFeaturedImageSrc featuredImage
 
         trimmedexcerpt =
             String.split "<p>" excerpt

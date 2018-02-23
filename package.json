@@ -7,7 +7,6 @@
     "watch": "onchange './elm/*.elm' './public/*' './bin/*' -v -i -- npm start"
   },
   "dependencies": {
-    "bluebird": "^3.5.1",
     "dotenv": "^5.0.0",
     "elm-static-html-lib": "^0.1.0",
     "graphql-request": "^1.4.1",

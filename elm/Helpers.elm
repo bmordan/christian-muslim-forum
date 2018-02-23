@@ -43,6 +43,8 @@ import Tachyons.Classes
         , dn
         , db_ns
         , ph3
+        , link
+        , white
         )
 
 
@@ -53,6 +55,10 @@ type alias Person =
     , faith : String
     , tags : List String
     }
+
+
+type alias FeaturedImage =
+    { sourceUrl : String }
 
 
 setInnerHtml : String -> Html.Attribute msg
@@ -118,7 +124,7 @@ forumIcon commentCount =
         div [] []
     else
         img
-            [ src (frontendUrl ++ "/illustrations/forum.svg")
+            [ src (frontendUrl ++ "/forum.svg")
             , classList [ ( "article-forum-icon", True ) ]
             ]
             []
@@ -211,7 +217,7 @@ viewChristianPerson withBio person =
                     ]
                     [ Html.text (viewRoleFromTag person.tags) ]
             ]
-        , img [ src (frontendUrl ++ "/cross.svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
+        , img [ src (frontendUrl ++ "/" ++ (String.toLower faith) ++ ".svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
         ]
 
 
@@ -222,7 +228,7 @@ viewMuslimPerson withBio person =
         , classList [ ( "person", True ) ]
         ]
         [ img
-            [ src (frontendUrl ++ "/moon.svg")
+            [ src (frontendUrl ++ "/" ++ (String.toLower faith) ++ ".svg")
             , classes [ flex_none, pl3 ]
             , classList [ ( "icon", True ) ]
             ]
@@ -266,3 +272,30 @@ formatDate formatter str =
 onKeyDown : (Int -> msg) -> Html.Attribute msg
 onKeyDown tagger =
     on "keydown" (Decode.map tagger keyCode)
+
+
+getFeaturedImageSrc : Maybe FeaturedImage -> String
+getFeaturedImageSrc featuredImage =
+    case featuredImage of
+        Just val ->
+            val.sourceUrl
+
+        Nothing ->
+            (frontendUrl ++ "/defaultImg.jpg")
+
+
+createNavItem : String -> Html.Html msg
+createNavItem item =
+    let
+        route =
+            if item == "home" then
+                ""
+            else
+                item
+    in
+        Html.a
+            [ href ("/" ++ route)
+            , classes [ pl2, white, link ]
+            ]
+            [ Html.text (capitalise item)
+            ]
