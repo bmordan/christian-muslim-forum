@@ -232,6 +232,27 @@ main {
   display: inline-block;
 }
 
+.event-card {
+  position: relative;
+}
+
+.event-card-img {
+  background-position: center center;
+  background-size: cover;
+  height: 8.8rem;
+  width: 8.8rem;
+}
+
+.event-card-date {
+  height: 4rem;
+  width: 4rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border: solid 1px var(--cmf-blue);
+  background-color: var(--cmf-white);
+}
+
 @media screen and (min-width: 30rem) {
   .footer {
     min-height: 16rem;

@@ -47,7 +47,7 @@ module.exports = [
           }
         }
       }
-      posts(first: 4, after: null) {
+      articles: posts(first: 4, after: null) {
             pageInfo{
               hasNextPage
               endCursor
@@ -65,6 +65,8 @@ module.exports = [
                   avatar{
                     url
                   }
+                  bio: description
+                  faith: nickname
                 }
                 commentCount
               }
@@ -227,31 +229,15 @@ module.exports = [
     }`,
     formatter: formatArticle,
     make: "elm-make ./elm/Article.elm --output ./dist/article.js --yes"
-  },
-  {
-    moduleName: 'Search',
-    distFolder: 'search',
-    query: `{
-      tags(last: 20, where: {orderby: COUNT}){
-        edges{
-          node{
-            slug
-            count
-          }
-        }
-      }
-    }`,
-    formatter: formatSearch,
-    make: `elm-make ./elm/Search.elm --output ./dist/search.js --yes`
   }
 ]
 
-function formatHome ({pageBy, events, posts, tags}) {
+function formatHome ({pageBy, events, articles, tags}) {
   const listEvent = events.edges.map(({node}) => {
     const {title, slug, date, excerpt, featuredImage} = node
     return {title, slug, date, excerpt, featuredImage}
   })
-  const listArticle = posts.edges.map(({node}) => {
+  const listArticle = articles.edges.map(({node}) => {
     const {title, slug, excerpt, featuredImage, commentCount, author} = node
     return {title, slug, excerpt, featuredImage, commentCount, author}
   })
@@ -260,6 +246,9 @@ function formatHome ({pageBy, events, posts, tags}) {
     title: pageBy.title
     , content: pageBy.content
     , events: listEvent
+    , articles: listArticle
+    , articlesMore: true
+    , articlesNext: "null"
   }
 }
 

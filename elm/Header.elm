@@ -33,6 +33,7 @@ import Tachyons.Classes
         , fr_ns
         , w_100
         , z_2
+        , top_0
         )
 
 
@@ -116,7 +117,7 @@ flipChev model =
 view : Model -> Html.Html Msg
 view model =
     div
-        [ classes [ fixed, z_2, w_100, flex, items_start, justify_end ]
+        [ classes [ fixed, z_2, w_100, flex, items_start, justify_end, top_0 ]
         , classList [ ( "bg_cmf_islamic", True ), ( "header", True ) ]
         ]
         [ Html.a [ href "/" ]
