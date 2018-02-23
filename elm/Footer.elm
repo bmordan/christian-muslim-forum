@@ -133,6 +133,16 @@ decodeSubscription =
         |> required "email" string
 
 
+decodeModel : Decoder Model
+decodeModel =
+    decode Model
+        |> required "modal" bool
+        |> required "email" string
+        |> required "fname" string
+        |> required "lname" string
+        |> required "message" string
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of

@@ -92,7 +92,8 @@ chevBlue =
 
 navItems : List String
 navItems =
-    [ "articles"
+    [ "home"
+    , "events"
     , "people"
     , "about"
     , "contact"

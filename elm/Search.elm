@@ -22,27 +22,9 @@ import Tachyons.Classes
         )
 
 
-main : Program Never Model Msg
-main =
-    Html.program
-        { init = init
-        , subscriptions = \_ -> Sub.none
-        , update = update
-        , view = view
-        }
-
-
-init : ( Model, Cmd Msg )
-init =
-    let
-        model =
-            { term = ""
-            , currentTerm = ""
-            , tags = []
-            , results = []
-            }
-    in
-        ( model, sendTagsRequest )
+initModel : Model
+initModel =
+    Model "" "" [] []
 
 
 type Msg
@@ -307,8 +289,7 @@ update msg model =
                     model.term
             in
                 ( { model
-                    | term = ""
-                    , currentTerm = currentTerm
+                    | currentTerm = currentTerm
                     , results = searchresults
                   }
                 , Cmd.none

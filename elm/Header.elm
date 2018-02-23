@@ -5,6 +5,8 @@ import Html.Attributes exposing (href, src, style, classList, id)
 import Html.Events exposing (onClick)
 import Config exposing (frontendUrl)
 import Json.Encode as Encode
+import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
+import Json.Decode.Pipeline exposing (decode, required)
 import Dom exposing (Error)
 import Dom.Scroll exposing (toLeft, toRight)
 import Task
@@ -49,6 +51,12 @@ initModel =
     Model False
 
 
+decodeModel : Decoder Model
+decodeModel =
+    decode Model
+        |> required "scrollLeft" bool
+
+
 scrollToLeft : Cmd Msg
 scrollToLeft =
     Task.attempt (always Noop) <| toLeft "header-nav"
@@ -61,12 +69,19 @@ scrollToRight =
 
 createNavItem : String -> Html.Html Msg
 createNavItem item =
-    Html.a
-        [ href ("/" ++ item)
-        , classes [ pl2, white, link ]
-        ]
-        [ Html.text (capitalise item)
-        ]
+    let
+        route =
+            if item == "home" then
+                ""
+            else
+                item
+    in
+        Html.a
+            [ href ("/" ++ route)
+            , classes [ pl2, white, link ]
+            ]
+            [ Html.text (capitalise item)
+            ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
