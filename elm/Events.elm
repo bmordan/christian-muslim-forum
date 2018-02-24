@@ -1,7 +1,7 @@
 module Events exposing (..)
 
 import Html exposing (text, div, node)
-import Html.Attributes exposing (href, src, id, content, rel, name, classList, style)
+import Html.Attributes exposing (href, src, id, content, rel, name, classList, style, name)
 import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
@@ -15,6 +15,7 @@ import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
         ( center
+        , mw5
         , mw7
         , lh_copy
         , pb3
@@ -230,9 +231,11 @@ viewFullEvent { slug, title, content, date, featuredImage } =
             getFeaturedImageSrc featuredImage
     in
         div [ classList [ ( "event", True ) ] ]
-            [ div
+            [ Html.a [ name slug ] []
+            , div
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
                 , classList [ ( "event-img", True ) ]
+                , classes [ mw5 ]
                 ]
                 []
             , div [] [ text title ]

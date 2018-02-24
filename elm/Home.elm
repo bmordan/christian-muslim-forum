@@ -9,7 +9,6 @@ import Json.Decode.Pipeline exposing (decode, required, optional)
 import Helpers exposing (setInnerHtml, head, formatDate, forumIcon, getFeaturedImageSrc)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
-import Slides exposing (slides)
 import Header
 import Footer
 import Search
@@ -18,12 +17,22 @@ import Tachyons.Classes
     exposing
         ( center
         , mw7
+        , mt6
+        , lh_title
         , lh_copy
+        , pa1
         , pa2
         , pa3
+        , ph1
+        , ph2
         , ph3
+        , pv4
+        , pl1
         , pl2
+        , ph2
+        , pb2
         , tc
+        , tr
         , w4
         , w_60_ns
         , pt3
@@ -41,10 +50,27 @@ import Tachyons.Classes
         , justify_between
         , justify_start
         , link
+        , white
         , br_100
+        , fl
+        , f1
+        , f1_ns
+        , f2_m
+        , f2
         , f3
+        , b
         , w_100
+        , w_50
+        , w_50_ns
+        , w_third_ns
+        , w_two_thirds_ns
         , mv3
+        , bg_dark_red
+        , bg_light_gray
+        , dn
+        , db_ns
+        , dn_m
+        , near_black
         )
 
 
@@ -552,7 +578,7 @@ viewAuthor author =
             , classes [ flex, items_center, justify_start ]
             ]
             [ img [ src url, classes [ br_100, flex_none ] ] []
-            , div [ classes [ flex_auto, pl2 ] ] [ text ("by " ++ author.name) ]
+            , div [ classes [ flex_auto, pl2 ] ] [ text author.name ]
             ]
 
 
@@ -565,7 +591,7 @@ viewEvent { title, slug, excerpt, date, featuredImage } =
         Html.a
             [ href (frontendUrl ++ "/events/index.html#" ++ slug)
             , classList [ ( "event-card", True ) ]
-            , classes [ flex, items_center, justify_start, link ]
+            , classes [ flex, items_start, justify_start, ph2, pb2, link, near_black, lh_title, mw7, center, w_100 ]
             ]
             [ div
                 [ classList [ ( "event-card-img", True ) ]
@@ -574,16 +600,27 @@ viewEvent { title, slug, excerpt, date, featuredImage } =
                 ]
                 []
             , div [ classes [ pl2 ] ]
-                [ div [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ] ] [ text title ]
-                , div [ setInnerHtml excerpt ] []
+                [ div
+                    [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+                    , classes [ link ]
+                    , setInnerHtml title
+                    ]
+                    []
+                , div
+                    [ setInnerHtml excerpt
+                    ]
+                    []
                 ]
             , div
                 [ classes [ flex_none, flex, flex_column, items_center, justify_between ]
                 , classList [ ( "event-card-date", True ) ]
                 ]
-                [ div [] [ text (formatDate "%b" date) ]
-                , div [] [ text (formatDate "%d" date) ]
-                , div [] [ text (formatDate "%a" date) ]
+                [ div [ classes [ bg_dark_red, white, w_100, tc ] ] [ text (formatDate "%b" date) ]
+                , div [ classes [ f2, f2_m, f1_ns, b, tc, w_100, link ] ] [ text (formatDate "%d" date) ]
+                , div
+                    [ classes [ w_100, pa1, dn, db_ns, dn_m, w_100, tc, bg_light_gray, near_black ]
+                    ]
+                    [ text (formatDate "%A" date) ]
                 ]
             ]
 
@@ -602,7 +639,7 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
                 |> String.slice 0 180
     in
         div
-            [ classes [ flex, flex_column, justify_start ]
+            [ classes [ flex, flex_column, justify_start, fl, w_100, w_50_ns, pa1 ]
             , classList [ ( "article-card", True ) ]
             ]
             [ Html.a
@@ -613,7 +650,7 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
                 [ div [ classList [ ( "article-card-title", True ) ] ]
                     [ div
                         [ setInnerHtml title
-                        , classes [ pa3, f3 ]
+                        , classes [ pa3, f3, lh_title ]
                         , classList [ ( "feature-font", True ) ]
                         ]
                         []
@@ -623,7 +660,7 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
             , viewAuthor author
             , div
                 [ setInnerHtml (trimmedexcerpt ++ "...")
-                , classes [ pa3 ]
+                , classes [ pa3, lh_title ]
                 , classList [ ( "article-card-excerpt", True ) ]
                 ]
                 []
@@ -635,37 +672,40 @@ view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , div
-            [ classes [ center, mw7, lh_copy, ph3 ]
+            [ classes [ center, mw7, lh_copy, ph3, mt6 ]
             ]
             [ div [ setInnerHtml model.content ] []
             ]
         , if List.isEmpty model.events then
-            div [] []
+            div [ classes [ fl, w_100, w_two_thirds_ns ] ]
+                [ text "There are no events at the moment"
+                ]
           else
             div []
                 [ div
                     [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
-                    , classes [ pa2 ]
+                    , classes [ f2, ph2, pv4, w_100, center, mw7 ]
                     ]
-                    [ text "Events" ]
-                , div [] (List.map viewEvent model.events)
+                    [ text "Upcoming Events" ]
+                , div [] (List.map viewEvent (List.reverse model.events))
                 ]
         , if List.isEmpty model.articles then
-            div [] []
+            div [ classes [ fl, w_100, w_two_thirds_ns ] ]
+                [ text "There are no articles at the moment"
+                ]
           else
-            div []
+            div [ classes [ fl, w_100, w_two_thirds_ns ] ]
                 [ div
                     [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
-                    , classes [ pa2 ]
+                    , classes [ f2, ph2, pv4, w_100 ]
                     ]
                     [ text "Latest Articles" ]
-                , div [] (List.map viewArticle model.articles)
-                , viewMoreBtn model
+                , div [ classes [ ph1 ] ] (List.map viewArticle model.articles)
                 ]
-        , div []
+        , div [ classes [ fl, w_100, w_third_ns ] ]
             [ div
                 [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
-                , classes [ pa2 ]
+                , classes [ f2, tr, ph2, pv4, w_100, center, mw7 ]
                 ]
                 [ text "Search" ]
             , Html.map SearchMsg (Search.view model.searchModel)

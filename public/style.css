@@ -30,6 +30,10 @@ main {
   color: var(--cmf-teal) !important;
 }
 
+.cmf-white {
+  color: var(--cmf-white) !important;
+}
+
 .bg_cmf_green {
   background-color: var(--cmf-green) !important;
 }
@@ -115,9 +119,9 @@ main {
 
 .bg_cmf_islamic {
   background-color: var(--cmf-green);
-  background-image: url(cmf_pattern.png);
-  background-size: 50px 50px;
-  background-position: center 57px;
+  background-image: url(cmf_pattern.svg);
+  background-size: 135px 231px;
+  background-position: center center;
 }
 
 .header-img {
@@ -153,9 +157,6 @@ main {
   margin-top: -2rem;
 }
 
-.article-card {
-  width: 100%;
-}
 
 .article-card-img {
   position: relative;
@@ -227,8 +228,8 @@ main {
   background-position: center center;
   background-size: cover;
   border-top-left-radius: .25rem;
-  height: 11.8rem;
-  width: 11.8rem;
+  height: 8.8rem;
+  width: 8.8rem;
   display: inline-block;
 }
 
@@ -244,12 +245,11 @@ main {
 }
 
 .event-card-date {
-  height: 4rem;
+  height: 4.25rem;
   width: 4rem;
   position: absolute;
-  bottom: 0;
-  left: 0;
-  border: solid 1px var(--cmf-blue);
+  bottom: 0.4rem;
+  left: 0.5rem;
   background-color: var(--cmf-white);
 }
 
@@ -260,19 +260,13 @@ main {
   background-size: cover;
 }
 
+.search-box {
+  border: solid 2px var(--cmf-blue);
+}
+
 @media screen and (min-width: 30rem) {
   .footer {
     min-height: 16rem;
-  }
-  .articles {
-    margin-left: .5rem;
-    margin-right: -0.15rem;
-  }
-  .article-card {
-    width: 49%;
-    display: inline-block;
-    vertical-align: top;
-    padding: .5rem;
   }
   .article-card-excerpt {
     height: 8.8rem;
@@ -287,11 +281,12 @@ main {
   }
 }
 
-@media screen and (min-width: 48rem) {
-  .article-card {
-    width: 33%;
-  }
-  .result {
-    width: 33%;
+@media screen and (min-width: 48rem) {}
+
+@media screen and (min-width: 60em) {
+  .event-card-date {
+    height: 8.8rem;
+    width: 8.8rem;
+    position: static;
   }
 }

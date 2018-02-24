@@ -67,17 +67,11 @@ type alias Page =
 
 
 type alias HeaderModel =
-    { scrollLeft : Bool
-    }
+    Header.Model
 
 
 type alias FooterModel =
-    { modal : Bool
-    , fname : String
-    , lname : String
-    , email : String
-    , message : String
-    }
+    Footer.Model
 
 
 decodeData : Decoder Data
@@ -95,25 +89,9 @@ decodePage =
 decodeModel : Decoder Model
 decodeModel =
     decode Model
-        |> required "headerModel" decodeHeaderModel
-        |> required "footerModel" decodeFooterModel
+        |> required "headerModel" Header.decodeModel
+        |> required "footerModel" Footer.decodeModel
         |> required "content" string
-
-
-decodeHeaderModel : Decoder HeaderModel
-decodeHeaderModel =
-    decode HeaderModel
-        |> required "scrollLeft" bool
-
-
-decodeFooterModel : Decoder FooterModel
-decodeFooterModel =
-    decode FooterModel
-        |> required "modal" bool
-        |> required "fname" string
-        |> required "lname" string
-        |> required "email" string
-        |> required "message" string
 
 
 pageRequest : Operation Query Variables

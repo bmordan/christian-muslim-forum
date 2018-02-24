@@ -217,7 +217,7 @@ viewChristianPerson withBio person =
                     ]
                     [ Html.text (viewRoleFromTag person.tags) ]
             ]
-        , img [ src (frontendUrl ++ "/" ++ (String.toLower faith) ++ ".svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
+        , img [ src (frontendUrl ++ "/" ++ (String.toLower person.faith) ++ ".svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
         ]
 
 
@@ -228,7 +228,7 @@ viewMuslimPerson withBio person =
         , classList [ ( "person", True ) ]
         ]
         [ img
-            [ src (frontendUrl ++ "/" ++ (String.toLower faith) ++ ".svg")
+            [ src (frontendUrl ++ "/" ++ (String.toLower person.faith) ++ ".svg")
             , classes [ flex_none, pl3 ]
             , classList [ ( "icon", True ) ]
             ]

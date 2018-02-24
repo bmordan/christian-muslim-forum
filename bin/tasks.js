@@ -90,7 +90,6 @@ module.exports = [
     distFolder: 'about',
     query: `{
       pageBy(uri: "about-us") {
-        title
         content
       }
     }`,
