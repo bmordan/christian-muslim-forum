@@ -17,8 +17,14 @@ import Tachyons.Classes
         ( center
         , mw5
         , mw7
+        , mb3
         , lh_copy
+        , pa2
+        , pb2
         , pb3
+        , ph3
+        , pl2
+        , pl4_ns
         , ph3
         , flex
         , flex_auto
@@ -28,6 +34,35 @@ import Tachyons.Classes
         , items_start
         , justify_start
         , justify_between
+        , justify_end
+        , w_100
+        , pv4
+        , ph2
+        , f2
+        , f2_ns
+        , f4
+        , pb4
+        , near_black
+        , bg_near_white
+        , bg_light_gray
+        , bg_dark_red
+        , bg_white
+        , tc
+        , tl
+        , tr
+        , tl_ns
+        , dn_m
+        , db_ns
+        , dn
+        , pa1
+        , link
+        , b
+        , f1_ns
+        , f2_m
+        , white
+        , pl2
+        , lh_title
+        , lh_copy
         )
 
 
@@ -224,30 +259,48 @@ viewPage model =
         ]
 
 
-viewFullEvent : Event -> Html.Html Msg
-viewFullEvent { slug, title, content, date, featuredImage } =
+viewDate : String -> Html.Html Msg
+viewDate date =
+    div
+        [ classes [ flex_none, flex, flex_column, items_center, justify_between, bg_near_white ]
+        , classList [ ( "event-date", True ) ]
+        ]
+        [ div [ classes [ bg_dark_red, white, w_100, tc ] ] [ text (formatDate "%b" date) ]
+        , div [ classes [ f2, f2_m, f1_ns, b, tc, w_100, link, near_black, ph3 ] ] [ text (formatDate "%d" date) ]
+        , div
+            [ classes [ w_100, pa1, dn, db_ns, dn_m, w_100, tc, bg_light_gray, near_black ]
+            ]
+            [ text (formatDate "%A" date) ]
+        ]
+
+
+viewEvent : Event -> Html.Html Msg
+viewEvent { title, slug, content, date, featuredImage } =
     let
         image =
             getFeaturedImageSrc featuredImage
     in
-        div [ classList [ ( "event", True ) ] ]
-            [ Html.a [ name slug ] []
-            , div
+        div
+            [ classList [ ( "event", True ) ]
+            ]
+            [ div
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
                 , classList [ ( "event-img", True ) ]
-                , classes [ mw5 ]
                 ]
-                []
-            , div [] [ text title ]
-            , div
-                [ classes [ flex_none, flex, flex_column, items_center, justify_between ]
-                , classList [ ( "event-date", True ) ]
+                [ div
+                    [ classes [ flex, items_center, justify_end, pl2, pl4_ns ]
+                    ]
+                    [ div
+                        [ classes [ flex_auto, white, pl2, pb2 ]
+                        , classList [ ( "event-title", True ), ( "bg_trans_yellow", True ) ]
+                        ]
+                        [ div [ classes [ f2, f1_ns ] ] [ text title ]
+                        , div [ classes [ f4 ] ] [ text (formatDate "%a %d %b - %l:%M %P" date) ]
+                        ]
+                    , div [] [ viewDate date ]
+                    ]
                 ]
-                [ div [] [ text (formatDate "%b" date) ]
-                , div [] [ text (formatDate "%d" date) ]
-                , div [] [ text (formatDate "%a" date) ]
-                ]
-            , div [ setInnerHtml content ] []
+            , div [ classes [ pa2 ], setInnerHtml content ] []
             ]
 
 
@@ -256,12 +309,20 @@ view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , node "main"
-            [ classes [ ph3, pb3, center, mw7, lh_copy ]
+            [ classes [ pb3, center, mw7, lh_copy ]
+            , style [ ( "margin-top", "-4rem" ) ]
             ]
             [ if List.isEmpty model.events then
-                div [] [ text "As you can see, at present there are no events on our website. Why not follow us on Twitter or subscribe to our mailing list so you'll be the first to hear about our next event." ]
+                div [] [ text "..." ]
               else
-                div [] (List.map viewFullEvent model.events)
+                div [ classes [ pb4 ] ]
+                    [ div
+                        [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+                        , classes [ f2, ph2, pv4, w_100, center, mw7, tr ]
+                        ]
+                        [ text "Events" ]
+                    , div [] (List.map viewEvent (List.reverse model.events))
+                    ]
             ]
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]
