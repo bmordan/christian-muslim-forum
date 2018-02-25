@@ -100,6 +100,7 @@ main {
   text-align: center;
   padding: .75rem 0;
   width: 157px;
+  height: 46px;
   margin: 0.75rem auto;
   border-radius: 3px;
 }
@@ -186,7 +187,6 @@ main {
 
 .article-card-author img {
   width: 57px;
-  margin-left: -10px;
   position: relative;
   z-index: 1;
 }
@@ -224,13 +224,33 @@ main {
   vertical-align: top;
 }
 
+.result {
+  height: 16.5rem;
+}
+
 .result-img {
-  background-position: center center;
+  background-position: center top;
   background-size: cover;
   border-top-left-radius: .25rem;
-  height: 8.8rem;
-  width: 8.8rem;
-  display: inline-block;
+  position: absolute;
+  top:0;
+  bottom:55%;
+  left:0;
+  right:0;
+}
+
+.result-body {
+  position: absolute;
+  top:45%;
+  bottom:0;
+  right:0;
+  left:0;
+}
+
+.result-author {
+  position: absolute;
+  bottom: 0.25rem;
+  right: .25rem;
 }
 
 .event-card, .event {
@@ -281,7 +301,11 @@ main {
   }
 }
 
-@media screen and (min-width: 48rem) {}
+@media screen and (min-width: 48rem) {
+  .result-img {
+    background-position: center center;
+  }
+}
 
 @media screen and (min-width: 60em) {
   .event-card-date {

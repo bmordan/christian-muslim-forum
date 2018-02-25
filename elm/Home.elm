@@ -18,6 +18,8 @@ import Tachyons.Classes
         ( center
         , mw7
         , mt6
+        , mb2
+        , mb3
         , lh_title
         , lh_copy
         , pa1
@@ -31,6 +33,8 @@ import Tachyons.Classes
         , pl2
         , ph2
         , pb2
+        , pb4
+        , pr2
         , tc
         , tr
         , w4
@@ -52,6 +56,7 @@ import Tachyons.Classes
         , link
         , white
         , br_100
+        , cf
         , fl
         , f1
         , f1_ns
@@ -67,6 +72,9 @@ import Tachyons.Classes
         , mv3
         , bg_dark_red
         , bg_light_gray
+        , bg_near_white
+        , bg_white
+        , db
         , dn
         , db_ns
         , dn_m
@@ -591,7 +599,7 @@ viewEvent { title, slug, excerpt, date, featuredImage } =
         Html.a
             [ href (frontendUrl ++ "/events/index.html#" ++ slug)
             , classList [ ( "event-card", True ) ]
-            , classes [ flex, items_start, justify_start, ph2, pb2, link, near_black, lh_title, mw7, center, w_100 ]
+            , classes [ flex, items_center, justify_start, mb3, link, bg_white, near_black, lh_title, mw7, center, w_100 ]
             ]
             [ div
                 [ classList [ ( "event-card-img", True ) ]
@@ -672,16 +680,14 @@ view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , div
-            [ classes [ center, mw7, lh_copy, ph3, mt6 ]
+            [ classes [ center, mw7, lh_copy, ph3, mt6, pb4 ]
             ]
             [ div [ setInnerHtml model.content ] []
             ]
         , if List.isEmpty model.events then
-            div [ classes [ fl, w_100, w_two_thirds_ns ] ]
-                [ text "There are no events at the moment"
-                ]
+            div [] [ text "..." ]
           else
-            div []
+            div [ classes [ pb4, bg_near_white ] ]
                 [ div
                     [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                     , classes [ f2, ph2, pv4, w_100, center, mw7 ]
@@ -691,7 +697,7 @@ view model =
                 ]
         , if List.isEmpty model.articles then
             div [ classes [ fl, w_100, w_two_thirds_ns ] ]
-                [ text "There are no articles at the moment"
+                [ text "..."
                 ]
           else
             div [ classes [ fl, w_100, w_two_thirds_ns ] ]
@@ -700,9 +706,10 @@ view model =
                     , classes [ f2, ph2, pv4, w_100 ]
                     ]
                     [ text "Latest Articles" ]
-                , div [ classes [ ph1 ] ] (List.map viewArticle model.articles)
+                , div [ classes [ cf, ph1 ] ] (List.map viewArticle model.articles)
+                , div [ classes [ w_100, pb4 ] ] [ viewMoreBtn model ]
                 ]
-        , div [ classes [ fl, w_100, w_third_ns ] ]
+        , div [ classes [ fl, w_100, w_third_ns, pr2 ] ]
             [ div
                 [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                 , classes [ f2, tr, ph2, pv4, w_100, center, mw7 ]

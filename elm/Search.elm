@@ -49,8 +49,8 @@ import Tachyons.Classes
         , bg_near_white
         , link
         , tr
-        , h3
-        , w3
+        , h2
+        , w2
         )
 
 
@@ -382,7 +382,7 @@ viewResultsHeading model =
         header =
             (toString resultsLength) ++ " search result" ++ plural ++ " for " ++ model.currentTerm
     in
-        div [ classes [ pv2 ] ] [ text header ]
+        div [ classes [ pv2, near_white ] ] [ text header ]
 
 
 viewSearchResult : SearchResult -> Html.Html Msg
@@ -402,6 +402,7 @@ viewSearchResult result =
         Html.a
             [ href (frontendUrl ++ "/article.html#" ++ result.slug)
             , classes [ relative, flex, items_start, link, near_black, pb2, bg_near_white, mb2 ]
+            , classList [ ( "result", True ) ]
             ]
             [ div
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
@@ -409,18 +410,21 @@ viewSearchResult result =
                 , classes [ flex_none ]
                 ]
                 []
-            , div [ classes [ pl2 ] ]
+            , div
+                [ classes [ pa2 ]
+                , classList [ ( "result-body", True ) ]
+                ]
                 [ div [ classList [ ( "cmf-blue", True ), ( "feature-font", True ) ] ] [ text result.title ]
                 , div [ classList [ ( "article-forum-icon", True ) ] ] [ forum ]
                 , div [ setInnerHtml (trim160 result.excerpt) ] []
                 , div
                     [ classes [ flex, items_center, justify_end ]
-                    , classList [ ( "cmf-teal", True ) ]
+                    , classList [ ( "cmf-teal", True ), ( "result-author", True ) ]
                     ]
                     [ text result.author.name
                     , img
                         [ src result.author.avatar
-                        , classes [ br_100, h3, w3, ml2, flex_none ]
+                        , classes [ br_100, h2, w2, ml2, flex_none ]
                         ]
                         []
                     ]
