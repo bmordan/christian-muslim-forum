@@ -35,6 +35,7 @@ import Tachyons.Classes
         , pb2
         , pb4
         , pr2
+        , pr2_ns
         , tc
         , tr
         , w4
@@ -709,7 +710,7 @@ view model =
                 , div [ classes [ cf, ph1 ] ] (List.map viewArticle model.articles)
                 , div [ classes [ w_100, pb4 ] ] [ viewMoreBtn model ]
                 ]
-        , div [ classes [ fl, w_100, w_third_ns, pr2 ] ]
+        , div [ classes [ fl, w_100, w_third_ns, pr2_ns ] ]
             [ div
                 [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                 , classes [ f2, tr, ph2, pv4, w_100, center, mw7 ]

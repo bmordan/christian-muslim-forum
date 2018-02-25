@@ -18,16 +18,23 @@ import Search
 import List.Extra exposing (elemIndex, getAt)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
-import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate, head, chevBlue, slugToTitle)
+import Helpers exposing (setInnerHtml, forumIcon, capitalise, viewPerson, formatDate, head, chevBlue, slugToTitle, getFeaturedImageSrc)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
         ( pa2
+        , ph3
+        , ph4
+        , pb3
+        , pa0
+        , pl2
+        , pv3
         , pa3
         , pt1
         , pt2
         , pt3
         , ph2
+        , pv4
         , pb0
         , flex
         , flex_wrap
@@ -41,12 +48,15 @@ import Tachyons.Classes
         , mr2
         , mv1
         , mh2
+        , nt4
+        , z_1
         , br_100
         , items_center
         , items_start
         , bg_light_gray
         , bg_dark_gray
         , white
+        , f2
         , f3
         , f5
         , f6
@@ -57,19 +67,25 @@ import Tachyons.Classes
         , mw7
         , lh_copy
         , center
-        , ph3
-        , pb3
-        , pa0
-        , pl2
-        , pv3
         , link
         , dn
         , db
+        , dn_ns
         , db_ns
+        , db_m
+        , db_l
+        , f1_ns
         , dib
         , br2
+        , fl
         , w_50
+        , w_50_ns
+        , w_100
+        , w_third_ns
+        , w_two_thirds_ns
         , v_top
+        , relative
+        , nt2
         )
 
 
@@ -137,9 +153,8 @@ type alias RelatedPost =
     { title : String
     , slug : String
     , excerpt : String
-    , date : String
-    , featuredImage : Maybe FeaturedImage
     , commentCount : Maybe Int
+    , featuredImage : Maybe FeaturedImage
     , author : Author
     }
 
@@ -295,9 +310,8 @@ decodeRelatedPost =
         |> required "title" string
         |> required "slug" string
         |> required "excerpt" string
-        |> required "date" string
-        |> required "featuredImage" (nullable decodeFeaturedImage)
         |> required "commentCount" (nullable int)
+        |> required "featuredImage" (nullable decodeFeaturedImage)
         |> required "author" decodeAuthor
 
 
@@ -672,7 +686,7 @@ updatePost model postdata =
 
 createRelatedPost : RelatedPostNode -> RelatedPost
 createRelatedPost { node } =
-    RelatedPost node.title node.slug node.excerpt node.date node.featuredImage node.commentCount node.author
+    RelatedPost node.title node.slug node.excerpt node.commentCount node.featuredImage node.author
 
 
 scrollToTop : Cmd Msg
@@ -744,54 +758,130 @@ update msg model =
                 ( { model | searchModel = updatedSearchModel }, Cmd.map SearchMsg searchCmd )
 
 
-viewFeaturedImage : Maybe FeaturedImage -> String
-viewFeaturedImage featured =
-    case featured of
-        Just val ->
-            val.sourceUrl
-
-        Nothing ->
-            "/defaultImg.jpg"
-
-
 createPerson : Author -> Person
 createPerson { name, bio, avatar, faith } =
     { name = name, bio = bio, avatar = avatar, faith = faith, tags = [] }
 
 
-viewPost : Model -> Html.Html Msg
-viewPost model =
+viewAuthor : Model -> Html.Html Msg
+viewAuthor model =
     case model.post of
         Just post ->
-            div [ setInnerHtml post.content ] []
+            div
+                [ classes [ relative, nt4, z_1 ]
+                , classList [ ( "cmf-blue", True ) ]
+                ]
+                [ viewPerson True (createPerson post.author) ]
 
         Nothing ->
             div [] []
 
 
-viewPrevLink : Maybe String -> Html.Html Msg
-viewPrevLink postLink =
-    case postLink of
-        Just link ->
-            a [ Html.Attributes.href ("#" ++ link) ] [ text ("<- " ++ link) ]
+viewHero : Model -> Html.Html Msg
+viewHero model =
+    case model.post of
+        Just post ->
+            let
+                image =
+                    getFeaturedImageSrc post.featuredImage
+            in
+                div
+                    [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
+                    , classList [ ( "article-hero", True ) ]
+                    ]
+                    [ div
+                        [ classList [ ( "article-card-title", True ) ]
+                        , classes [ f2, f1_ns, pa2 ]
+                        , setInnerHtml post.title
+                        ]
+                        []
+                    ]
 
         Nothing ->
-            a [ Html.Attributes.href "/articles" ] [ text "<- back to articles" ]
+            div [] []
+
+
+viewContent : Model -> Html.Html Msg
+viewContent model =
+    let
+        content =
+            case model.post of
+                Just post ->
+                    post.content
+
+                Nothing ->
+                    "..."
+    in
+        div
+            [ setInnerHtml content
+            , classes [ pa2, mw7, center ]
+            ]
+            []
+
+
+viewPrevLink : Maybe String -> Html.Html Msg
+viewPrevLink postLink =
+    let
+        url =
+            case postLink of
+                Just val ->
+                    ("#" ++ val)
+
+                Nothing ->
+                    "/articles"
+
+        label =
+            case postLink of
+                Just val ->
+                    slugToTitle val
+
+                Nothing ->
+                    "back to articles"
+    in
+        Html.a
+            [ Html.Attributes.href url
+            , classes [ flex, items_center, justify_start, link, f3 ]
+            , classList [ ( "cmf-blue", True ) ]
+            ]
+            [ div [ classes [ ph4 ], style [ ( "transform", "rotate(180deg)" ) ] ] [ chevBlue ]
+            , div [ classes [ link, dn, db_m, db_l ] ] [ text label ]
+            , div [ classes [ link, dn_ns ], classList [ ( "cmf-blue", True ) ] ] [ text "Prev" ]
+            ]
 
 
 viewNextLink : Maybe String -> Html.Html Msg
 viewNextLink postLink =
-    case postLink of
-        Just link ->
-            a [ Html.Attributes.href ("#" ++ link) ] [ text (link ++ " ->") ]
+    let
+        url =
+            case postLink of
+                Just val ->
+                    ("#" ++ val)
 
-        Nothing ->
-            a [ Html.Attributes.href "/articles" ] [ text "back to articles ->" ]
+                Nothing ->
+                    "/articles"
+
+        label =
+            case postLink of
+                Just val ->
+                    slugToTitle val
+
+                Nothing ->
+                    "back to articles"
+    in
+        Html.a
+            [ Html.Attributes.href url
+            , classes [ flex, items_center, justify_start, link, f3 ]
+            , classList [ ( "cmf-blue", True ) ]
+            ]
+            [ div [ classes [ link, dn, db_m, db_l, tr ] ] [ text label ]
+            , div [ classes [ link, dn_ns ] ] [ text "Next" ]
+            , div [ classes [ ph4 ] ] [ chevBlue ]
+            ]
 
 
 viewLinks : Model -> Html.Html Msg
 viewLinks model =
-    div [ classes [ pt3 ] ]
+    div [ classes [ flex, items_center, justify_between, pv4 ] ]
         [ viewPrevLink model.prev
         , viewNextLink model.next
         ]
@@ -845,42 +935,33 @@ viewRelatedPosts model =
     if List.isEmpty model.related then
         div [] []
     else
-        div []
+        div [ classes [ fl, w_100, w_two_thirds_ns ] ]
             [ div
-                [ classes [ pa2, f3 ]
+                [ classes [ f2, pa2, pv4 ]
                 , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                 ]
                 [ text "Related Articles" ]
             , div
                 [ classList [ ( "bg_cmf_teal", True ) ]
-                , classes []
+                , classes [ nt2 ]
                 ]
                 (List.map viewRelatedPost model.related)
             ]
 
 
-viewRelatedPost : RelatedPost -> Html.Html Msg
+viewRelatedPost : RelatedPost -> Html.Html msg
 viewRelatedPost post =
-    Html.a
-        [ href ("#" ++ post.slug)
-        , classes [ pa2, db, link ]
-        ]
-        [ div
-            [ setInnerHtml post.title
-            ]
-            []
-        , div [ setInnerHtml post.excerpt ] []
-        ]
+    div [ classes [ pa2, fl, w_100, w_50_ns ] ] [ Search.viewSearchResult post ]
 
 
 viewSearch : Model -> Html.Html Msg
 viewSearch model =
-    div []
+    div [ classes [ fl, w_100, w_third_ns ] ]
         [ div
-            [ classes [ pa2, f3 ]
+            [ classes [ pa2, f2, tr, ph4 ]
             , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
             ]
-            [ text "Search for Articles" ]
+            [ text "Search" ]
         , Html.map SearchMsg (Search.view model.searchModel)
         ]
 
@@ -892,7 +973,9 @@ view model =
         , node "main"
             [ classes [ lh_copy, pa0 ]
             ]
-            [ viewPost model
+            [ viewHero model
+            , viewAuthor model
+            , viewContent model
             , viewComments model
             , viewLinks model
             , viewRelatedPosts model

@@ -212,7 +212,7 @@ tagsQuery : Operation Query Variables
 tagsQuery =
     GraphQl.named "tags"
         [ GraphQl.field "tags"
-            |> GraphQl.withArgument "last" (GraphQl.int 23)
+            |> GraphQl.withArgument "last" (GraphQl.int 25)
             |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "orderby", GraphQl.type_ "COUNT" ) ])
             |> GraphQl.withSelectors
                 [ GraphQl.field "edges"
@@ -246,7 +246,7 @@ searchQuery : String -> String -> Operation Query Variables
 searchQuery field term =
     GraphQl.named "search"
         [ GraphQl.field "posts"
-            |> GraphQl.withArgument "first" (GraphQl.int 26)
+            |> GraphQl.withArgument "first" (GraphQl.int 12)
             |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( field, GraphQl.string term ) ])
             |> GraphQl.withSelectors
                 [ GraphQl.field "edges"
@@ -385,7 +385,7 @@ viewResultsHeading model =
         div [ classes [ pv2, near_white ] ] [ text header ]
 
 
-viewSearchResult : SearchResult -> Html.Html Msg
+viewSearchResult : SearchResult -> Html.Html msg
 viewSearchResult result =
     let
         image =
@@ -414,7 +414,12 @@ viewSearchResult result =
                 [ classes [ pa2 ]
                 , classList [ ( "result-body", True ) ]
                 ]
-                [ div [ classList [ ( "cmf-blue", True ), ( "feature-font", True ) ] ] [ text result.title ]
+                [ div
+                    [ classList [ ( "cmf-blue", True ), ( "feature-font", True ) ]
+                    , classes [ Tachyons.Classes.truncate ]
+                    , setInnerHtml result.title
+                    ]
+                    []
                 , div [ classList [ ( "article-forum-icon", True ) ] ] [ forum ]
                 , div [ setInnerHtml (trim160 result.excerpt) ] []
                 , div

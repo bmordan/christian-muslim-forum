@@ -230,7 +230,7 @@ main {
 }
 
 .result {
-  height: 16.5rem;
+  height: 18.5rem;
 }
 
 .result-img {
@@ -302,6 +302,16 @@ main {
 
 .search-box {
   border: solid 2px var(--cmf-blue);
+}
+
+p .alignleft {
+  float: left;
+  padding-right: .5rem;
+}
+
+p .alignleft {
+  float: right;
+  padding-left: .5rem;
 }
 
 @media screen and (min-width: 30rem) {
