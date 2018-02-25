@@ -40,6 +40,7 @@ module.exports = [
             slug
             title
             excerpt
+            content
             date
             featuredImage{
               sourceUrl
@@ -89,7 +90,6 @@ module.exports = [
     distFolder: 'about',
     query: `{
       pageBy(uri: "about-us") {
-        title
         content
       }
     }`,
@@ -158,35 +158,26 @@ module.exports = [
     make: "elm-make ./elm/People.elm --output ./dist/people/bundle.js --yes"
   },
   {
-    moduleName: 'Articles',
-    distFolder: 'articles',
+    moduleName: 'Events',
+    distFolder: 'events',
     query: `{
-      posts(first: 4, after: null) {
-        pageInfo{
-          hasNextPage
-          endCursor
-        }
+      events(where: {status: FUTURE}){
         edges{
           node{
             slug
             title
             excerpt
+            content
+            date
             featuredImage{
               sourceUrl
             }
-            author{
-              name
-              avatar{
-                url
-              }
-            }
-            commentCount
           }
         }
       }
     }`,
-    formatter: formatAtricles,
-    make: "elm-make ./elm/Articles.elm --output ./dist/articles/bundle.js --yes"
+    formatter: formatEvents,
+    make: "elm-make ./elm/Events.elm --output ./dist/events/bundle.js --yes"
   },
   {
     moduleName: 'Article',
@@ -232,21 +223,22 @@ module.exports = [
   }
 ]
 
-function formatHome ({pageBy, events, articles, tags}) {
-  const listEvent = events.edges.map(({node}) => {
-    const {title, slug, date, excerpt, featuredImage} = node
-    return {title, slug, date, excerpt, featuredImage}
-  })
-  const listArticle = articles.edges.map(({node}) => {
-    const {title, slug, excerpt, featuredImage, commentCount, author} = node
-    return {title, slug, excerpt, featuredImage, commentCount, author}
-  })
+const listEvent = map(({node}) => {
+  const {title, slug, date, excerpt, content, featuredImage} = node
+  return {title, slug, date, excerpt, content, featuredImage}
+})
 
+const listArticle = map(({node}) => {
+  const {title, slug, excerpt, featuredImage, commentCount, author} = node
+  return {title, slug, excerpt, featuredImage, commentCount, author}
+})
+
+function formatHome ({pageBy, events, articles, tags}) {
   return {
     title: pageBy.title
     , content: pageBy.content
-    , events: listEvent
-    , articles: listArticle
+    , events: listEvent(events.edges)
+    , articles: listArticle(articles.edges)
     , articlesMore: true
     , articlesNext: "null"
   }
@@ -264,16 +256,6 @@ function formatArticle ({postBy}) {
     commentCount: null,
     comments: []
   }
-}
-
-function formatAtricles ({posts}) {
-  const {pageInfo, edges} = posts
-  const formatted = {
-    hasNextPage: pageInfo.hasNextPage
-    , nextCursor: "null"
-    , posts : edges
-  }
-  return formatted
 }
 
 function formatContact ({pageBy, people}) {
@@ -316,4 +298,10 @@ function formatSearch ({tags}) {
    , assoc('currentTerm', "")
    , assoc('results', [])
  )(tags)
+}
+
+function formatEvents ({events}) {
+  return {
+    events: listEvent(events.edges)
+  }
 }

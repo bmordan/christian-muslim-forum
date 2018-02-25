@@ -7,6 +7,5 @@ build(tasks[0]) // Home
 // build(tasks[1]) // About
 // build(tasks[2]) // Contact
 // build(tasks[3]) // People
-// build(tasks[4]) // Articles
+build(tasks[4]) // Events
 // build(tasks[5]) // Article
-// build(tasks[6]) // Search

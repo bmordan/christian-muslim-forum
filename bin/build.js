@@ -1,10 +1,8 @@
 const baseUrl = "http://46.101.6.182/graphql"
 const request = require('graphql-request').request
-const Promise = require('bluebird')
 const path = require('path')
 const fs = require('fs')
 const {execSync} = require('child_process')
-const exec = Promise.promisifyAll(require('child_process').exec)
 const stringReplaceStream = require('string-replace-stream')
 const elmStaticHtml = require('elm-static-html-lib').elmStaticHtml
 const { pipe, pipeP, assoc, tap, apply, contains } = require('ramda')

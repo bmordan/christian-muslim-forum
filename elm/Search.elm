@@ -1,24 +1,56 @@
 module Search exposing (..)
 
 import Html exposing (text, div, input, span, img)
-import Html.Attributes exposing (href, src, id, content, rel, name, value)
+import Html.Attributes exposing (href, src, id, content, rel, name, value, classList, style)
 import Html.Events exposing (onClick, onInput, onFocus)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt)
-import Helpers exposing (setInnerHtml, head, onKeyDown)
+import Helpers exposing (setInnerHtml, head, onKeyDown, getFeaturedImageSrc, trim160)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
         ( center
+        , mw5
         , mw7
+        , ml2
+        , mb2
         , lh_copy
+        , pt2
         , pb3
+        , pb2
+        , ph2
         , ph3
+        , pa1
         , pa2
+        , pl2
+        , pv2
         , underline
+        , br2
+        , flex
+        , flex_auto
+        , flex_none
+        , flex_wrap
+        , items_start
+        , items_center
+        , justify_end
+        , v_top
+        , w_100
+        , br_100
+        , dib
+        , nl2
+        , nr2
+        , pointer
+        , relative
+        , near_black
+        , near_white
+        , bg_near_white
+        , link
+        , tr
+        , h3
+        , w3
         )
 
 
@@ -327,8 +359,8 @@ viewPage model =
 
 viewSearchSuggestions : Tag -> Html.Html Msg
 viewSearchSuggestions { slug } =
-    span
-        [ classes [ pa2, underline ]
+    div
+        [ classes [ dib, pa2, underline, v_top, pointer, near_white ]
         , onClick (AutoSearch slug)
         ]
         [ text slug ]
@@ -350,19 +382,14 @@ viewResultsHeading model =
         header =
             (toString resultsLength) ++ " search result" ++ plural ++ " for " ++ model.currentTerm
     in
-        div [] [ text header ]
+        div [ classes [ pv2 ] ] [ text header ]
 
 
 viewSearchResult : SearchResult -> Html.Html Msg
 viewSearchResult result =
     let
         image =
-            case result.featuredImage of
-                Just val ->
-                    val.sourceUrl
-
-                Nothing ->
-                    (frontendUrl ++ "/defaultImg.jpg")
+            getFeaturedImageSrc result.featuredImage
 
         forum =
             case result.commentCount of
@@ -372,24 +399,62 @@ viewSearchResult result =
                 Nothing ->
                     span [] []
     in
-        Html.a [ href (frontendUrl ++ "/article.html#" ++ result.slug) ]
-            [ div [] [ text result.title ]
-            , div [] [ img [ src image ] [] ]
-            , div [] [ forum ]
-            , div [ setInnerHtml result.excerpt ] []
-            , div [] [ text ("by " ++ result.author.name) ]
+        Html.a
+            [ href (frontendUrl ++ "/article.html#" ++ result.slug)
+            , classes [ relative, flex, items_start, link, near_black, pb2, bg_near_white, mb2 ]
+            ]
+            [ div
+                [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
+                , classList [ ( "result-img", True ) ]
+                , classes [ flex_none ]
+                ]
+                []
+            , div [ classes [ pl2 ] ]
+                [ div [ classList [ ( "cmf-blue", True ), ( "feature-font", True ) ] ] [ text result.title ]
+                , div [ classList [ ( "article-forum-icon", True ) ] ] [ forum ]
+                , div [ setInnerHtml (trim160 result.excerpt) ] []
+                , div
+                    [ classes [ flex, items_center, justify_end ]
+                    , classList [ ( "cmf-teal", True ) ]
+                    ]
+                    [ text result.author.name
+                    , img
+                        [ src result.author.avatar
+                        , classes [ br_100, h3, w3, ml2, flex_none ]
+                        ]
+                        []
+                    ]
+                ]
             ]
 
 
 view : Model -> Html.Html Msg
 view model =
-    div []
-        [ div []
-            [ input [ onInput Term, onKeyDown KeyDown, onFocus Clear, value model.term, classes [ pa2 ] ] []
-            , img [ onClick Search, src (frontendUrl ++ "/search.svg") ] []
+    div
+        [ classes [ pa2 ]
+        , classList [ ( "bg_cmf_blue", True ) ]
+        ]
+        [ div
+            [ classes [ flex, items_center, justify_end, br2, bg_near_white ]
+            , classList [ ( "search-box", True ) ]
+            ]
+            [ input
+                [ onInput Term
+                , onKeyDown KeyDown
+                , onFocus Clear
+                , value model.term
+                , classes [ pa2, flex_auto ]
+                ]
+                []
+            , img
+                [ onClick Search
+                , src (frontendUrl ++ "/search.svg")
+                , classes [ ph2, flex_none ]
+                ]
+                []
             ]
         , if List.isEmpty model.results then
-            div [] (List.map viewSearchSuggestions model.tags)
+            div [ classes [ flex_wrap, nl2, nr2 ] ] (List.map viewSearchSuggestions model.tags)
           else
             div []
                 [ viewResultsHeading model

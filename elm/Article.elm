@@ -14,6 +14,7 @@ import Navigation
 import Header
 import Footer
 import Regex
+import Search
 import List.Extra exposing (elemIndex, getAt)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import GraphQl exposing (Operation, Variables, Query, Named)
@@ -92,6 +93,7 @@ initModel location =
     , comments = []
     , headerModel = Header.initModel
     , footerModel = Footer.initModel
+    , searchModel = Search.initModel
     }
 
 
@@ -108,6 +110,7 @@ type Msg
     | Scroll
     | HeaderMsg Header.Msg
     | FooterMsg Footer.Msg
+    | SearchMsg Search.Msg
 
 
 type alias PostsData =
@@ -239,21 +242,20 @@ type alias Model =
     , comments : List Node
     , headerModel : Header.Model
     , footerModel : Footer.Model
+    , searchModel : Search.Model
     }
 
 
 type alias HeaderModel =
-    { scrollLeft : Bool
-    }
+    Header.Model
 
 
 type alias FooterModel =
-    { modal : Bool
-    , fname : String
-    , lname : String
-    , email : String
-    , message : String
-    }
+    Footer.Model
+
+
+type alias SearchModel =
+    Search.Model
 
 
 decodePostsData : Decoder PostsData
@@ -396,24 +398,9 @@ decodeModel =
         |> required "next" (nullable string)
         |> required "slug" (nullable string)
         |> required "comments" (Decode.list decodeNode)
-        |> required "headerModel" decodeHeaderModel
-        |> required "footerModel" decodeFooterModel
-
-
-decodeHeaderModel : Decoder HeaderModel
-decodeHeaderModel =
-    decode HeaderModel
-        |> required "scrollLeft" bool
-
-
-decodeFooterModel : Decoder FooterModel
-decodeFooterModel =
-    decode FooterModel
-        |> required "modal" bool
-        |> required "fname" string
-        |> required "lname" string
-        |> required "email" string
-        |> required "message" string
+        |> required "headerModel" Header.decodeModel
+        |> required "footerModel" Footer.decodeModel
+        |> required "searchModel" Search.decodeModel
 
 
 postsQuery : String -> Operation Query Variables
@@ -620,7 +607,7 @@ updatePosts model { posts } =
             if hasNextPage then
                 postsRequest cursor
             else
-                postRequest slug
+                Cmd.batch [ (postRequest slug), Cmd.map SearchMsg Search.sendTagsRequest ]
     in
         ( newModel, nextCmd )
 
@@ -749,6 +736,13 @@ update msg model =
             in
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
+        SearchMsg subMsg ->
+            let
+                ( updatedSearchModel, searchCmd ) =
+                    Search.update subMsg model.searchModel
+            in
+                ( { model | searchModel = updatedSearchModel }, Cmd.map SearchMsg searchCmd )
+
 
 viewFeaturedImage : Maybe FeaturedImage -> String
 viewFeaturedImage featured =
@@ -853,7 +847,7 @@ viewRelatedPosts model =
     else
         div []
             [ div
-                [ classes [ pa3, f3 ]
+                [ classes [ pa2, f3 ]
                 , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                 ]
                 [ text "Related Articles" ]
@@ -867,7 +861,28 @@ viewRelatedPosts model =
 
 viewRelatedPost : RelatedPost -> Html.Html Msg
 viewRelatedPost post =
-    Html.a [ href ("#" ++ post.slug), classes [ pa2, db ] ] [ text post.title ]
+    Html.a
+        [ href ("#" ++ post.slug)
+        , classes [ pa2, db, link ]
+        ]
+        [ div
+            [ setInnerHtml post.title
+            ]
+            []
+        , div [ setInnerHtml post.excerpt ] []
+        ]
+
+
+viewSearch : Model -> Html.Html Msg
+viewSearch model =
+    div []
+        [ div
+            [ classes [ pa2, f3 ]
+            , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+            ]
+            [ text "Search for Articles" ]
+        , Html.map SearchMsg (Search.view model.searchModel)
+        ]
 
 
 view : Model -> Html.Html Msg
@@ -881,6 +896,7 @@ view model =
             , viewComments model
             , viewLinks model
             , viewRelatedPosts model
+            , viewSearch model
             ]
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]

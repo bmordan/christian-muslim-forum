@@ -13,7 +13,7 @@ import Dom.Scroll exposing (toLeft, toRight)
 import Task
 import Process
 import Time
-import Helpers exposing (chev, navItems)
+import Helpers exposing (chev, navItems, createNavItem)
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -99,16 +99,6 @@ type alias Subscription =
 initModel : Model
 initModel =
     Model False "" "" "" ""
-
-
-createNavItem : String -> Html.Html Msg
-createNavItem item =
-    Html.a
-        [ href ("/" ++ item)
-        , classes [ pl2, white, link ]
-        ]
-        [ Html.text (String.toUpper (String.left 1 item) ++ String.dropLeft 1 item)
-        ]
 
 
 subscribtionRequest : Model -> Http.Request Subscription

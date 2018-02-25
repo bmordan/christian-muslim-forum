@@ -399,7 +399,7 @@ viewChristianPerson person =
                 ]
                 [ text person.name ]
             ]
-        , img [ src (frontendUrl ++ "/cross.svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
+        , img [ src (frontendUrl ++ "/" ++ (String.toLower person.faith) ++ ".svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
         ]
 
 
@@ -410,7 +410,7 @@ viewMuslimPerson person =
         , classList [ ( "person", True ) ]
         ]
         [ img
-            [ src (frontendUrl ++ "/moon.svg")
+            [ src (frontendUrl ++ "/" ++ (String.toLower person.faith) ++ ".svg")
             , classes [ flex_none, pl3 ]
             , classList [ ( "icon", True ) ]
             ]
