@@ -6,5 +6,4 @@ npm-debug.log
 .git
 LICENCE
 elm-stuff
-dist/*
 docker-compose.yml

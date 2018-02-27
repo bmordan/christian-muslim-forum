@@ -26,32 +26,23 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
     return {model: model, decoder: `${moduleName}.decodeModel`}
   }
 
-  const generateHtml = (config) => {
-    return elmStaticHtml(elmRoot, `${moduleName}.viewPage`, config)
-      .catch(err => console.error(err))
-  }
-
   const writeFile = (generatedHtml) => {
     let elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`
-    if (contains(moduleName, ['Articles'])) {
-      elmJsContent += `;Elm.Search.embed(document.getElementById("search"))`
-    }
     const html = generatedHtml.replace(`<script id="elm-js">`, `<script id="elm-js">${elmJsContent}`)
     fs.writeFileSync(distPath, html, "utf8")
-    return html
-  }
-
-  const writeJs = () => {
     return execSync(make)
   }
 
+  request(baseUrl, query)
+    .then(res => {
+      const config = pipe(
+        formatResponse
+        , addDecoder
+      )(res)
 
-  pipeP(
-    request
-    , formatResponse
-    , addDecoder
-    , generateHtml
-    , writeFile
-    , writeJs
-  )(baseUrl, query)
+      elmStaticHtml(elmRoot, `${moduleName}.viewPage`, config)
+        .then(generatedHtml => {
+          writeFile(generatedHtml)
+        }).catch(err => console.error(err))
+    }).catch(err => console.error(err))
 }

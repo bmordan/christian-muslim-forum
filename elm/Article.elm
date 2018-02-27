@@ -86,6 +86,7 @@ import Tachyons.Classes
         , v_top
         , relative
         , nt2
+        , pr2_ns
         )
 
 
@@ -956,7 +957,7 @@ viewRelatedPost post =
 
 viewSearch : Model -> Html.Html Msg
 viewSearch model =
-    div [ classes [ fl, w_100, w_third_ns ] ]
+    div [ classes [ fl, w_100, w_third_ns, pr2_ns ] ]
         [ div
             [ classes [ pa2, f2, tr, ph4 ]
             , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]

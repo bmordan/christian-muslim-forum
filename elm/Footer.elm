@@ -159,7 +159,7 @@ update msg model =
             )
 
         SubscriptionRes (Err err) ->
-            ( { model | message = stringifyError err }, Cmd.none )
+            ( { model | message = stringifyError (Debug.log "subscribeerr" err) }, Cmd.none )
 
         CloseModal ->
             ( { model
@@ -231,6 +231,7 @@ modal model =
                         , value model.fname
                         , placeholder "First name"
                         , onInput Fname
+                        , Html.Attributes.required True
                         ]
                         []
                     , input
@@ -238,6 +239,7 @@ modal model =
                         , value model.lname
                         , placeholder "Last name"
                         , onInput Lname
+                        , Html.Attributes.required True
                         ]
                         []
                     , input
@@ -245,6 +247,8 @@ modal model =
                         , value model.email
                         , placeholder "email"
                         , onInput Email
+                        , Html.Attributes.required True
+                        , Html.Attributes.type_ "email"
                         ]
                         []
                     ]

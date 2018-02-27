@@ -304,12 +304,12 @@ main {
   border: solid 2px var(--cmf-blue);
 }
 
-p .alignleft {
+.alignleft {
   float: left;
   padding-right: .5rem;
 }
 
-p .alignleft {
+.alignright {
   float: right;
   padding-left: .5rem;
 }

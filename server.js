@@ -5,7 +5,7 @@ const bodyParser = require('body-parser')
 const Joi = require('joi-browser')
 const path = require('path')
 const request = require('request-promise')
-const mailChimpBaseUrl = "https://us11.api.mailchimp.com/3.0"
+const mailChimpBaseUrl = "https://us14.api.mailchimp.com/3.0"
 const mailChimpListUrl = `/lists/${process.env.MAILCHIMP_LIST}/members/`
 const mailChimpAuthorization = `apikey ${process.env.MAILCHIMP_API}`
 
@@ -51,6 +51,7 @@ app.post('/subscribe', (req, res) => {
       } = mailchimp_res
       return res.json({status, email, fname})
     }).catch(mailchimp_err => {
+      console.error(mailchimp_err)
       return res.send(mailchimp_err)
     })
   })
