@@ -61,6 +61,18 @@ type alias FeaturedImage =
     { sourceUrl : String }
 
 
+type alias OpenGraphTags =
+    { title : String
+    , url : String
+    , description : String
+    , image : String
+    , site_name : String
+    , twitterCard : String
+    , twitterSite : String
+    , twitterCreator : String
+    }
+
+
 setInnerHtml : String -> Html.Attribute msg
 setInnerHtml str =
     (Html.Attributes.property "innerHTML" (Encode.string str))
@@ -160,8 +172,48 @@ head title =
         , node "meta" [ Html.Attributes.name "msapplication-TileColor", content "#ffffff" ] []
         , node "meta" [ Html.Attributes.name "msapplication-TileImage", content (frontendUrl ++ "/ms-icon-144x144.png") ] []
         , node "meta" [ Html.Attributes.name "theme-color", content "#12745E" ] []
-        , node "title" [] [ Html.text title ]
         , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
+        , node "title" [] [ Html.text title ]
+        ]
+
+
+headWithOGtags : OpenGraphTags -> Html.Html msg
+headWithOGtags ogtags =
+    node "head"
+        []
+        [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
+        , node "link" [ href "/style.css", rel "stylesheet" ] []
+        , node "meta" [ Html.Attributes.name "viewport", content "width=device-width, initial-scale=1.0" ] []
+        , node "meta" [ httpEquiv "Content-Security-Policy", content "default-src 'self'; font-src 'self' data: fonts.gstatic.com;" ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-57x57.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-60x60.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-72x72.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-76x76.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-114x114.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-120x120.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-144x144.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-152x152.png") ] []
+        , node "link" [ rel "apple-touch-icon", href (frontendUrl ++ "/apple-icon-180x180.png") ] []
+        , node "link" [ rel "icon", href (frontendUrl ++ "/apple-icon-192x192.png") ] []
+        , node "link" [ rel "icon", href (frontendUrl ++ "/apple-icon-32x32.png") ] []
+        , node "link" [ rel "icon", href (frontendUrl ++ "/apple-icon-96x96.png") ] []
+        , node "link" [ rel "icon", href (frontendUrl ++ "/apple-icon-16x16.png") ] []
+        , node "link" [ rel "manifest", href (frontendUrl ++ "/manifest.json") ] []
+        , node "meta" [ Html.Attributes.name "msapplication-TileColor", content "#ffffff" ] []
+        , node "meta" [ Html.Attributes.name "msapplication-TileImage", content (frontendUrl ++ "/ms-icon-144x144.png") ] []
+        , node "meta" [ Html.Attributes.name "theme-color", content "#12745E" ] []
+        , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
+        , node "title" [] [ Html.text ogtags.title ]
+
+        -- , node "meta" [ Html.Attributes.name "twitter:card", content "summary" ] []
+        -- , node "meta" [ Html.Attributes.name "twitter:site", content "@ChrisMusForum" ] []
+        -- , node "meta" [ Html.Attributes.name "twitter:title", content ogtags.title ] []
+        -- , node "meta" [ Html.Attributes.name "twitter:description", content ogtags.description ] []
+        -- , node "meta" [ Html.Attributes.name "twitter:image", content ogtags.image ] []
+        -- , node "meta" [ Html.Attributes.property "og:title", content ogtags.title ] []
+        -- , node "meta" [ Html.Attributes.property "og:url", content ogtags.url ] []
+        -- , node "meta" [ Html.Attributes.property "og:description", content ogtags.description ] []
+        -- , node "meta" [ Html.Attributes.property "og:image", content ogtags.image ] []
         ]
 
 

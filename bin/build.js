@@ -33,9 +33,6 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
 
   const writeFile = (generatedHtml) => {
     let elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`
-    if (contains(moduleName, ['Articles'])) {
-      elmJsContent += `;Elm.Search.embed(document.getElementById("search"))`
-    }
     const html = generatedHtml.replace(`<script id="elm-js">`, `<script id="elm-js">${elmJsContent}`)
     fs.writeFileSync(distPath, html, "utf8")
     return html

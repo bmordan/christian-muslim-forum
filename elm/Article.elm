@@ -705,7 +705,10 @@ update msg model =
         Slug location ->
             let
                 slug =
-                    String.dropLeft 1 (Debug.log "hash" location.hash)
+                    String.dropLeft 1 location.hash
+
+                head =
+                    Debug.log "tony" "boo"
             in
                 ( { model | slug = maybeSlug location }, postRequest slug )
 
@@ -798,7 +801,7 @@ viewHero model =
                     ]
 
         Nothing ->
-            div [] []
+            div [ classList [ ( "loading", True ) ] ] []
 
 
 viewContent : Model -> Html.Html Msg
@@ -922,7 +925,7 @@ viewPage model =
             []
             [ head "Article"
             , node "body"
-                [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
+                []
                 [ div [ id "elm-root" ] [ view model ]
                 , node "script" [ src "article.js" ] []
                 , node "script" [ id "elm-js" ] []
