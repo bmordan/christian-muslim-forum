@@ -317,12 +317,12 @@ main {
 
 .alignleft {
   float: left;
-  padding-right: .5rem;
+  padding-right: 1rem;
 }
 
-.alignleft {
+.alignright {
   float: right;
-  padding-left: .5rem;
+  padding-left: 1rem;
 }
 
 @media screen and (min-width: 30rem) {
