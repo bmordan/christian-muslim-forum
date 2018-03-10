@@ -278,7 +278,7 @@ formatDate : String -> String -> String
 formatDate formatter str =
     let
         date =
-            Date.fromString str
+            Date.fromString (String.left 10 str)
     in
         case date of
             Ok val ->
