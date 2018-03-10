@@ -75,7 +75,7 @@ main {
 }
 
 .loading::after{
-  content: "... المحمل"
+  content: "loading ... المحمل"
 }
 
 .modal {
