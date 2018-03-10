@@ -686,7 +686,7 @@ view model =
             [ div [ setInnerHtml model.content ] []
             ]
         , if List.isEmpty model.events then
-            div [] [ text "..." ]
+            div [ classList [ ( "loading", True ) ] ] []
           else
             div [ classes [ pb4, bg_near_white ] ]
                 [ div
@@ -697,9 +697,7 @@ view model =
                 , div [] (List.map viewEvent (List.reverse model.events))
                 ]
         , if List.isEmpty model.articles then
-            div [ classes [ fl, w_100, w_two_thirds_ns ] ]
-                [ text "..."
-                ]
+            div [ classList [ ( "loading", True ) ] ] []
           else
             div [ classes [ fl, w_100, w_two_thirds_ns ] ]
                 [ div

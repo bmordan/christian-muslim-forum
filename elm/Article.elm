@@ -1,4 +1,4 @@
-module Article exposing (..)
+port module Article exposing (..)
 
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
@@ -215,6 +215,7 @@ type alias Tag =
 type alias Post =
     { slug : String
     , title : String
+    , excerpt : String
     , content : String
     , date : String
     , author : Author
@@ -222,6 +223,14 @@ type alias Post =
     , commentCount : Maybe Int
     , comments : Edges
     , tags : TagEdges
+    }
+
+
+type alias OpenGraphTags =
+    { title : String
+    , description : String
+    , image : String
+    , url : String
     }
 
 
@@ -340,6 +349,7 @@ decodePost =
     decode Post
         |> required "slug" string
         |> required "title" string
+        |> required "excerpt" string
         |> required "content" string
         |> required "date" string
         |> required "author" decodeAuthor
@@ -464,6 +474,7 @@ postQuery slug =
             |> GraphQl.withSelectors
                 [ GraphQl.field "slug"
                 , GraphQl.field "title"
+                , GraphQl.field "excerpt"
                 , GraphQl.field "content"
                 , GraphQl.field "date"
                 , GraphQl.field "author"
@@ -669,21 +680,6 @@ maybeLink model fn =
                 Nothing
 
 
-updatePost : Model -> PostBy -> Model
-updatePost model postdata =
-    let
-        slug =
-            postdata.postBy.slug
-
-        newModel =
-            { model
-                | post = Just postdata.postBy
-                , comments = postdata.postBy.comments.edges
-            }
-    in
-        newModel
-
-
 createRelatedPost : RelatedPostNode -> RelatedPost
 createRelatedPost { node } =
     RelatedPost node.title node.slug node.excerpt node.commentCount node.featuredImage node.author
@@ -699,13 +695,36 @@ createQueryTagString { edges } =
     List.map (\{ node } -> node.slug) edges
 
 
+port toOpenGraphTags : OpenGraphTags -> Cmd msg
+
+
+sendGraphTags : Post -> Cmd Msg
+sendGraphTags { title, slug, excerpt, featuredImage } =
+    let
+        img =
+            case featuredImage of
+                Just src ->
+                    src.sourceUrl
+
+                Nothing ->
+                    (frontendUrl ++ "/defaultImage.jpg")
+
+        url =
+            (frontendUrl ++ "/article.html#" ++ slug)
+
+        openGraphTags =
+            OpenGraphTags title excerpt img url
+    in
+        toOpenGraphTags openGraphTags
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Slug location ->
             let
                 slug =
-                    String.dropLeft 1 (Debug.log "hash" location.hash)
+                    String.dropLeft 1 location.hash
             in
                 ( { model | slug = maybeSlug location }, postRequest slug )
 
@@ -716,7 +735,16 @@ update msg model =
             ( model, Cmd.none )
 
         GotPost (Ok postdata) ->
-            ( updatePost model postdata, relatedPostsRequest (createQueryTagString postdata.postBy.tags) )
+            ( { model
+                | slug = Just postdata.postBy.slug
+                , post = Just postdata.postBy
+                , comments = postdata.postBy.comments.edges
+              }
+            , Cmd.batch
+                [ relatedPostsRequest (createQueryTagString postdata.postBy.tags)
+                , sendGraphTags postdata.postBy
+                ]
+            )
 
         GotPost (Err err) ->
             ( model, Cmd.none )
@@ -798,7 +826,7 @@ viewHero model =
                     ]
 
         Nothing ->
-            div [] []
+            div [ classList [ ( "loading", True ) ] ] []
 
 
 viewContent : Model -> Html.Html Msg
@@ -922,7 +950,7 @@ viewPage model =
             []
             [ head "Article"
             , node "body"
-                [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
+                []
                 [ div [ id "elm-root" ] [ view model ]
                 , node "script" [ src "article.js" ] []
                 , node "script" [ id "elm-js" ] []
@@ -966,6 +994,13 @@ viewSearch model =
         ]
 
 
+viewShares : Html.Html msg
+viewShares =
+    div [ classes [ pa2, mw7, center ] ]
+        [ div [ classList [ ( "addthis_inline_share_toolbox", True ) ] ] []
+        ]
+
+
 view : Model -> Html.Html Msg
 view model =
     div []
@@ -976,10 +1011,12 @@ view model =
             [ viewHero model
             , viewAuthor model
             , viewContent model
+            , viewShares
             , viewComments model
             , viewLinks model
             , viewRelatedPosts model
             , viewSearch model
             ]
         , Html.map FooterMsg (Footer.view model.footerModel)
+        , node "script" [ src "http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5a59d97a9c28847a" ] []
         ]

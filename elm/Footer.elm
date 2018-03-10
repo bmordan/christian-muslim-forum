@@ -1,6 +1,6 @@
 module Footer exposing (..)
 
-import Html exposing (nav, a, text, div, img, nav, input)
+import Html exposing (nav, a, text, div, img, nav, input, node)
 import Html.Attributes exposing (href, src, style, classList, value, name, placeholder)
 import Html.Events exposing (onClick, onInput)
 import Http exposing (..)
@@ -303,4 +303,5 @@ view model =
         , div [ classes [ cf, db, pb1, center ] ]
             [ Html.small [ classes [ f7, tc, white ] ] [ text "Company Registration 5461960 | Charity Registration 1114793" ]
             ]
+        , node "script" [ src "https://platform.twitter.com/widgets.js" ] []
         ]
