@@ -302,6 +302,7 @@ function formatSearch ({tags}) {
 
 function formatEvents ({events}) {
   return {
-    events: listEvent(events.edges)
+    events: listEvent(events.edges),
+    event: null
   }
 }

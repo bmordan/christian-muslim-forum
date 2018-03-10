@@ -3,7 +3,6 @@ const request = require('graphql-request').request
 const path = require('path')
 const fs = require('fs')
 const {execSync} = require('child_process')
-const stringReplaceStream = require('string-replace-stream')
 const elmStaticHtml = require('elm-static-html-lib').elmStaticHtml
 const { pipe, pipeP, assoc, tap, apply, contains } = require('ramda')
 
@@ -31,11 +30,24 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}) {
       .catch(err => console.error(err))
   }
 
+
+  const updateOpenGraphTags = ({title, description, image, url}) => {
+    const decodeTitle = document.createElement('div');decodeTitle.innerHTML = title;
+    const decodeDescription = document.createElement('div');decodeDescription.innerHTML = description.replace(/[<p></p>]/g, "");
+    document.getElementById("og:title").setAttribute("content", decodeTitle.innerHTML)
+    document.getElementById("og:description").setAttribute("content", decodeDescription.innerHTML)
+    document.getElementById("og:image").setAttribute("content", image)
+    document.getElementById("og:url").setAttribute("content", url)
+  }
+
   const writeFile = (generatedHtml) => {
-    let elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`
+    let elmJsContent = `const App = Elm.${moduleName}.embed(document.getElementById("elm-root"))`
+    if (moduleName === 'Article') {
+      elmJsContent += `;App.ports.toOpenGraphTags.subscribe(${updateOpenGraphTags.toString()});`
+    }
     const html = generatedHtml.replace(`<script id="elm-js">`, `<script id="elm-js">${elmJsContent}`)
     fs.writeFileSync(distPath, html, "utf8")
-    return html
+    return
   }
 
   const writeJs = () => {

@@ -11,6 +11,10 @@ import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
 import Footer
+import Navigation
+import Dom exposing (Error)
+import Dom.Scroll exposing (toTop)
+import Task
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -38,6 +42,7 @@ import Tachyons.Classes
         , w_100
         , pv4
         , ph2
+        , pv2
         , f2
         , f2_ns
         , f4
@@ -63,41 +68,45 @@ import Tachyons.Classes
         , pl2
         , lh_title
         , lh_copy
+        , overflow_y_scroll
         )
 
 
-main : Program Never Model Msg
 main =
-    Html.program
+    Navigation.program Slug
         { init = init
-        , subscriptions = \_ -> Sub.none
         , update = update
         , view = view
+        , subscriptions = (\_ -> Sub.none)
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    let
-        model =
-            { headerModel = Header.initModel
-            , footerModel = Footer.initModel
-            , events = []
-            }
-    in
-        ( model, sendRequest )
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    ( initModel location, sendRequest )
+
+
+initModel : Navigation.Location -> Model
+initModel location =
+    { headerModel = Header.initModel
+    , footerModel = Footer.initModel
+    , events = []
+    , event = maybeSlug location
+    }
 
 
 type Msg
-    = GotContent (Result Error Data)
+    = GotContent (Result Http.Error Data)
     | HeaderMsg Header.Msg
     | FooterMsg Footer.Msg
+    | Slug Navigation.Location
 
 
 type alias Model =
     { headerModel : Header.Model
     , footerModel : Footer.Model
     , events : List Event
+    , event : Maybe String
     }
 
 
@@ -175,6 +184,7 @@ decodeModel =
         |> required "headerModel" Header.decodeModel
         |> required "footerModel" Footer.decodeModel
         |> required "events" (Decode.list decodeEvent)
+        |> required "event" (nullable string)
 
 
 pageRequest : Operation Query Variables
@@ -221,6 +231,14 @@ createEvent { node } =
     Event node.slug node.title node.content node.date node.featuredImage
 
 
+maybeSlug : Navigation.Location -> Maybe String
+maybeSlug { hash } =
+    if String.length hash > 0 then
+        Just (String.dropLeft 1 hash)
+    else
+        Nothing
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -244,6 +262,9 @@ update msg model =
             in
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
+        Slug location ->
+            ( { model | event = maybeSlug location }, Cmd.none )
+
 
 viewPage : Model -> Html.Html Msg
 viewPage model =
@@ -251,7 +272,7 @@ viewPage model =
         []
         [ head "Events"
         , node "body"
-            [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
+            []
             [ div [ id "elm-root" ] [ view model ]
             , node "script" [ src "bundle.js" ] []
             , node "script" [ id "elm-js" ] []
@@ -274,14 +295,26 @@ viewDate date =
         ]
 
 
-viewEvent : Event -> Html.Html Msg
-viewEvent { title, slug, content, date, featuredImage } =
+viewEvent : Maybe String -> Event -> Html.Html Msg
+viewEvent event { title, slug, content, date, featuredImage } =
     let
         image =
             getFeaturedImageSrc featuredImage
+
+        showEventClass =
+            case event of
+                Just evt ->
+                    if (evt == slug) then
+                        ( "event", True )
+                    else
+                        ( "dn", True )
+
+                Nothing ->
+                    ( "event", True )
     in
         div
-            [ classList [ ( "event", True ) ]
+            [ classList [ showEventClass ]
+            , id slug
             ]
             [ div
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
@@ -306,23 +339,43 @@ viewEvent { title, slug, content, date, featuredImage } =
 
 view : Model -> Html.Html Msg
 view model =
-    div []
-        [ Html.map HeaderMsg (Header.view model.headerModel)
-        , node "main"
-            [ classes [ pb3, center, mw7, lh_copy ]
-            , style [ ( "margin-top", "-4rem" ) ]
-            ]
-            [ if List.isEmpty model.events then
-                div [] [ text "..." ]
-              else
-                div [ classes [ pb4 ] ]
-                    [ div
-                        [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
-                        , classes [ f2, ph2, pv4, w_100, center, mw7, tr ]
+    let
+        showMore =
+            case model.event of
+                Just event ->
+                    True
+
+                Nothing ->
+                    False
+    in
+        div []
+            [ Html.map HeaderMsg (Header.view model.headerModel)
+            , node "main"
+                [ classes [ pb3, center, mw7, lh_copy ]
+                , style [ ( "margin-top", "-4rem" ) ]
+                ]
+                [ if List.isEmpty model.events then
+                    div [ classList [ ( "loading", True ) ] ] []
+                  else
+                    div [ classes [ pb4 ] ]
+                        [ div
+                            [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+                            , classes [ f2, ph2, pv4, w_100, center, mw7, tr ]
+                            ]
+                            [ text "Events" ]
+                        , div [] (List.map (viewEvent model.event) (List.reverse model.events))
+                        , if showMore then
+                            div [ classes [ w_100, tc, center, pv2 ] ]
+                                [ Html.a
+                                    [ href (frontendUrl ++ "/events")
+                                    , classes [ link ]
+                                    ]
+                                    [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "More Events" ]
+                                    ]
+                                ]
+                          else
+                            div [] []
                         ]
-                        [ text "Events" ]
-                    , div [] (List.map viewEvent (List.reverse model.events))
-                    ]
+                ]
+            , Html.map FooterMsg (Footer.view model.footerModel)
             ]
-        , Html.map FooterMsg (Footer.view model.footerModel)
-        ]
