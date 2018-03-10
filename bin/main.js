@@ -1,11 +1,19 @@
 const build = require('./build')
 const tasks = require('./tasks')
-const { map } = require('ramda')
 
-map(build, tasks)
-// build(tasks[0]) // Home
-// build(tasks[1]) // About
-// build(tasks[2]) // Contact
-// build(tasks[3]) // People
-// build(tasks[4]) // Events
-// build(tasks[5]) // Article
+// build(tasks[0], cb) // Home
+// build(tasks[1], cb) // About
+// build(tasks[2], cb) // Contact
+// build(tasks[3], cb) // People
+// build(tasks[4], cb) // Events
+// build(tasks[5], cb) // Article
+
+function buildTasks (tasks) {
+  if (!tasks.length) return
+  build(tasks.pop(), (err, msg) => {
+    if (err) throw err
+    buildTasks(tasks)
+  })
+}
+
+buildTasks(tasks)
