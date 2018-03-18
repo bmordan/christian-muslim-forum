@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head)
+import Helpers exposing (setInnerHtml, head, OpenGraphTags, getFeaturedImageSrc)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -142,11 +142,16 @@ update msg model =
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
 
+openGraphTags : OpenGraphTags
+openGraphTags =
+    OpenGraphTags "About us" "The Christian Muslim Forum launched in January 2006, realising a strategic initiative, begun by the Archbishop of Canterbury in 2001, considering the advisability of a bilateral forum bringing together in one body the range of Christian Churches and Muslim traditions in England." (getFeaturedImageSrc Nothing) (frontendUrl ++ "/about-us")
+
+
 viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ head "About Us"
+        [ head openGraphTags
         , node "body"
             [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
             [ div [ id "elm-root" ] [ view model ]

@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt, optional)
-import Helpers exposing (setInnerHtml, slugToTitle, viewPerson, head)
+import Helpers exposing (setInnerHtml, slugToTitle, viewPerson, head, OpenGraphTags, getFeaturedImageSrc)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -388,11 +388,16 @@ update msg model =
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
 
+openGraphTags : OpenGraphTags
+openGraphTags =
+    OpenGraphTags "Our People" "Our presidents, trustees and contributors" (getFeaturedImageSrc Nothing) (frontendUrl ++ "/people")
+
+
 viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ head "Our People"
+        [ head openGraphTags
         , node "body"
             [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
             [ div [ id "elm-root" ] [ view model ]

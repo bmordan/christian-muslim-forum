@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head, formatDate, getFeaturedImageSrc)
+import Helpers exposing (setInnerHtml, head, formatDate, getFeaturedImageSrc, OpenGraphTags)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -266,11 +266,16 @@ update msg model =
             ( { model | event = maybeSlug location }, Cmd.none )
 
 
+openGraphTags : OpenGraphTags
+openGraphTags =
+    OpenGraphTags "Events" "What's on? Find out here" (getFeaturedImageSrc Nothing) (frontendUrl ++ "/events")
+
+
 viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ head "Events"
+        [ head openGraphTags
         , node "body"
             []
             [ div [ id "elm-root" ] [ view model ]

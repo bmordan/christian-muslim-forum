@@ -5,10 +5,10 @@ const fs = require('fs')
 const { execSync } = require('child_process')
 const { elmStaticHtml } = require('elm-static-html-lib')
 const { pipe, assoc, tap, apply, contains } = require('ramda')
+const elmRoot = path.join(__dirname, '..')
+const distRoot = path.join(__dirname, '..', 'dist')
 
 module.exports = function ({moduleName, distFolder, query, formatter, make}, cb) {
-  const elmRoot = path.join(__dirname, '..')
-  const distRoot = path.join(__dirname, '..', 'dist')
   const fileName = moduleName === "Article" ? "article.html" : "index.html"
   const distPath = path.join(distRoot, distFolder, fileName)
 
@@ -21,17 +21,6 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}, cb)
     )(res)
     return { model: model, decoder: `${moduleName}.decodeModel`, newLines: false, indent: 0 }
   }
-
-
-  const updateOpenGraphTags = ({title, description, image, url}) => {
-    const decodeTitle = document.createElement('div');decodeTitle.innerHTML = title;
-    const decodeDescription = document.createElement('div');decodeDescription.innerHTML = description.replace(/[<p></p>]/g, "");
-    document.getElementById("og:title").setAttribute("content", decodeTitle.innerHTML)
-    document.getElementById("og:description").setAttribute("content", decodeDescription.innerHTML)
-    document.getElementById("og:image").setAttribute("content", image)
-    document.getElementById("og:url").setAttribute("content", url)
-  }
-
 
   const writeFile = (generatedHtml) => {
     let elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`

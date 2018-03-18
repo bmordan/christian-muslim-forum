@@ -938,20 +938,20 @@ viewComment { node } =
 viewPage : Model -> Html.Html Msg
 viewPage model =
     let
-        title =
+        openGraphTags =
             case model.post of
-                Just val ->
-                    val.title
+                Just { title, slug, excerpt, featuredImage } ->
+                    OpenGraphTags title excerpt (getFeaturedImageSrc featuredImage) (frontendUrl ++ "/articles/" ++ slug)
 
                 Nothing ->
-                    "Christian Muslim Forum Article"
+                    OpenGraphTags "Christian Muslim Forum" "Where Christian and Muslims ideas meet" (getFeaturedImageSrc Nothing) frontendUrl
     in
         node "html"
             []
-            [ head "Article"
+            [ head openGraphTags
             , node "body"
                 []
-                [ div [ id "elm-root" ] [ view model ]
+                [ div [ id "elm-root" ] []
                 , node "script" [ src "article.js" ] []
                 , node "script" [ id "elm-js" ] []
                 ]
