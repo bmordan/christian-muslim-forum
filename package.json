@@ -1,10 +1,10 @@
 {
   "scripts": {
-    "clean": "rm -fr ./dist/* && mkdir ./dist/about ./dist/contact ./dist/events ./dist/people",
+    "clean": "rm -fr ./dist/* && mkdir ./dist/about ./dist/contact ./dist/events ./dist/people ./dist/articles",
     "build": "node ./bin/main.js",
     "copy": "cp -R public/* dist/",
     "serve": "node server.js",
-    "start": "npm run serve",
+    "start": "npm run clean && npm run copy && npm run build && npm run serve",
     "watch": "onchange './elm/*.elm' './public/*' './bin/*' -v -i -- npm start"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "elm-static-html-lib": "^0.1.0",
     "express": "^4.16.2",
     "graphql-request": "^1.4.1",
+    "he": "^1.1.1",
     "joi-browser": "^13.0.1",
     "ramda": "^0.25.0",
     "request": "^2.83.0",

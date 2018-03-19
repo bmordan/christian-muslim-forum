@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head, formatDate, forumIcon, getFeaturedImageSrc)
+import Helpers exposing (setInnerHtml, head, formatDate, forumIcon, getFeaturedImageSrc, OpenGraphTags)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -550,11 +550,16 @@ update msg model =
                 ( model, Cmd.none )
 
 
+openGraphTags : OpenGraphTags
+openGraphTags =
+    OpenGraphTags "Christian Muslim Forum" "Christian muslim forum website. Where Christian and Muslim thinkers meet." (getFeaturedImageSrc Nothing) frontendUrl
+
+
 viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ head model.title
+        [ head openGraphTags
         , node "body"
             []
             [ div [ id "elm-root" ] [ view model ]
@@ -654,7 +659,7 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
             [ Html.a
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
                 , classList [ ( "article-card-img", True ) ]
-                , href (frontendUrl ++ "/article.html#" ++ slug)
+                , href (frontendUrl ++ "/articles/" ++ slug)
                 ]
                 [ div [ classList [ ( "article-card-title", True ) ] ]
                     [ div

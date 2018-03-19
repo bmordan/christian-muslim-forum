@@ -400,7 +400,7 @@ viewSearchResult result =
                     span [] []
     in
         Html.a
-            [ href (frontendUrl ++ "/article.html#" ++ result.slug)
+            [ href (frontendUrl ++ "/articles/" ++ result.slug)
             , classes [ relative, flex, items_start, link, near_black, pb2, bg_near_white, mb2 ]
             , classList [ ( "result", True ) ]
             ]

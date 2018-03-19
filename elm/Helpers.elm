@@ -63,13 +63,9 @@ type alias FeaturedImage =
 
 type alias OpenGraphTags =
     { title : String
-    , url : String
     , description : String
     , image : String
-    , site_name : String
-    , twitterCard : String
-    , twitterSite : String
-    , twitterCreator : String
+    , url : String
     }
 
 
@@ -147,8 +143,8 @@ trim160 str =
     ((String.slice 0 160 str) ++ "...")
 
 
-head : String -> Html.Html msg
-head title =
+head : OpenGraphTags -> Html.Html msg
+head { title, description, image, url } =
     node "head"
         []
         [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
@@ -170,15 +166,15 @@ head title =
         , node "link" [ rel "icon", href (frontendUrl ++ "/apple-icon-16x16.png") ] []
         , node "link" [ rel "manifest", href (frontendUrl ++ "/manifest.json") ] []
         , node "meta" [ Html.Attributes.name "msapplication-TileColor", content "#ffffff" ] []
-        , node "meta" [ Html.Attributes.name "msapplication-TileImage", content (frontendUrl ++ "/ms-icon-144x144.png") ] []
+        , node "meta" [ Html.Attributes.name "msapplication-TileImage", content image ] []
         , node "meta" [ Html.Attributes.name "twitter:card", content "summary" ] []
         , node "meta" [ Html.Attributes.name "twitter:site", content "@ChrisMusForum" ] []
         , node "meta" [ Html.Attributes.name "twitter:creator", content "@ChrisMusForum" ] []
-        , node "meta" [ Html.Attributes.id "og:title", Html.Attributes.property "property" (Encode.string "og:title"), content "" ] []
+        , node "meta" [ Html.Attributes.id "og:title", Html.Attributes.property "property" (Encode.string "og:title"), content title ] []
         , node "meta" [ Html.Attributes.id "og:site_name", Html.Attributes.property "property" (Encode.string "og:site_name"), content "Christian Muslim Forum" ] []
-        , node "meta" [ Html.Attributes.id "og:description", Html.Attributes.property "property" (Encode.string "og:description"), content "" ] []
-        , node "meta" [ Html.Attributes.id "og:image", Html.Attributes.property "property" (Encode.string "og:image"), content (frontendUrl ++ "/apple-icon-192x192.png") ] []
-        , node "meta" [ Html.Attributes.id "og:url", Html.Attributes.property "property" (Encode.string "og:url"), content "" ] []
+        , node "meta" [ Html.Attributes.id "og:description", Html.Attributes.property "property" (Encode.string "og:description"), content description ] []
+        , node "meta" [ Html.Attributes.id "og:image", Html.Attributes.property "property" (Encode.string "og:image"), content image ] []
+        , node "meta" [ Html.Attributes.id "og:url", Html.Attributes.property "property" (Encode.string "og:url"), content url ] []
         , node "meta" [ Html.Attributes.id "og:type", Html.Attributes.property "property" (Encode.string "og:type"), content "article" ] []
         , node "title" [] [ Html.text title ]
         ]

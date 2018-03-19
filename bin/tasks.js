@@ -178,48 +178,6 @@ module.exports = [
     }`,
     formatter: formatEvents,
     make: "elm-make ./elm/Events.elm --output ./dist/events/bundle.js --yes"
-  },
-  {
-    moduleName: 'Article',
-    distFolder: '.',
-    query: `{
-      postBy(slug: "invitation-to-jerusalem") {
-        id
-        title
-        slug
-        date
-        author {
-          name
-          description
-          avatar {
-            url
-          }
-        }
-        featuredImage{
-          sourceUrl
-        }
-        commentCount
-        comments {
-          edges {
-            node {
-              content
-              date
-              author {
-                ... on User {
-                  name
-                  description
-                  avatar {
-                    url
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }`,
-    formatter: formatArticle,
-    make: "elm-make ./elm/Article.elm --output ./dist/article.js --yes"
   }
 ]
 
@@ -244,26 +202,25 @@ function formatHome ({pageBy, events, articles, tags}) {
   }
 }
 
-function formatArticle ({postBy}) {
-  const {slug} = postBy
-  return {
-    post: null,
-    posts: [],
-    related: [],
-    prev: null,
-    next: null,
-    slug: slug,
-    commentCount: null,
-    comments: []
-  }
-}
+// function formatArticle ({postBy}) {
+//   const {slug} = postBy
+//   return {
+//     post: null,
+//     posts: [],
+//     related: [],
+//     prev: null,
+//     next: null,
+//     slug: slug,
+//     commentCount: null,
+//     comments: []
+//   }
+// }
 
 function formatContact ({pageBy, people}) {
-  const formatted = {
+  return {
     content: pageBy.content,
     people: reduce(formatPerson, {}, people.edges)
   }
-  return formatted
 }
 
 const arrayOfTags = pipe(

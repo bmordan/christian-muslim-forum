@@ -1,12 +1,12 @@
 module About exposing (..)
 
 import Html exposing (text, div, node)
-import Html.Attributes exposing (href, src, id, content, rel, name)
+import Html.Attributes exposing (href, src, id, content, rel, name, classList)
 import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head)
+import Helpers exposing (setInnerHtml, head, OpenGraphTags, getFeaturedImageSrc)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
@@ -142,11 +142,16 @@ update msg model =
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
 
+openGraphTags : OpenGraphTags
+openGraphTags =
+    OpenGraphTags "About us" "The Christian Muslim Forum launched in January 2006, realising a strategic initiative, begun by the Archbishop of Canterbury in 2001, considering the advisability of a bilateral forum bringing together in one body the range of Christian Churches and Muslim traditions in England." (getFeaturedImageSrc Nothing) (frontendUrl ++ "/about-us")
+
+
 viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ head "About Us"
+        [ head openGraphTags
         , node "body"
             [ Html.Attributes.style [ ( "min-height", "100vh" ) ] ]
             [ div [ id "elm-root" ] [ view model ]
@@ -160,10 +165,13 @@ view : Model -> Html.Html Msg
 view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
-        , node "main"
-            [ setInnerHtml model.content
-            , classes [ ph3, pb3, center, mw7, lh_copy ]
-            ]
-            []
+        , if (model.content == "") then
+            node "main" [ classList [ ( "loading", True ) ] ] []
+          else
+            node "main"
+                [ setInnerHtml model.content
+                , classes [ ph3, pb3, center, mw7, lh_copy ]
+                ]
+                []
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]

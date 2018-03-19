@@ -1,4 +1,4 @@
-port module Article exposing (..)
+module Article exposing (..)
 
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
@@ -648,11 +648,13 @@ subtract1 n =
 
 
 maybeSlug : Navigation.Location -> Maybe String
-maybeSlug { hash } =
-    if String.length hash > 0 then
-        Just (String.dropLeft 1 hash)
-    else
-        Nothing
+maybeSlug location =
+    String.split "/articles/" location.pathname
+        |> List.reverse
+        |> List.head
+        |> Maybe.withDefault "/"
+        |> String.slice 0 -1
+        |> Just
 
 
 maybeLink : Model -> (Int -> Int) -> Maybe String
@@ -695,34 +697,14 @@ createQueryTagString { edges } =
     List.map (\{ node } -> node.slug) edges
 
 
-port toOpenGraphTags : OpenGraphTags -> Cmd msg
-
-
-sendGraphTags : Post -> Cmd Msg
-sendGraphTags { title, slug, excerpt, featuredImage } =
-    let
-        img =
-            case featuredImage of
-                Just src ->
-                    src.sourceUrl
-
-                Nothing ->
-                    (frontendUrl ++ "/defaultImage.jpg")
-
-        url =
-            (frontendUrl ++ "/article.html#" ++ slug)
-
-        openGraphTags =
-            OpenGraphTags title excerpt img url
-    in
-        toOpenGraphTags openGraphTags
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Slug location ->
             let
+                loc =
+                    Debug.log "loc" location
+
                 slug =
                     String.dropLeft 1 location.hash
             in
@@ -740,10 +722,7 @@ update msg model =
                 , post = Just postdata.postBy
                 , comments = postdata.postBy.comments.edges
               }
-            , Cmd.batch
-                [ relatedPostsRequest (createQueryTagString postdata.postBy.tags)
-                , sendGraphTags postdata.postBy
-                ]
+            , relatedPostsRequest (createQueryTagString postdata.postBy.tags)
             )
 
         GotPost (Err err) ->
@@ -838,7 +817,7 @@ viewContent model =
                     post.content
 
                 Nothing ->
-                    "..."
+                    ""
     in
         div
             [ setInnerHtml content
@@ -853,10 +832,10 @@ viewPrevLink postLink =
         url =
             case postLink of
                 Just val ->
-                    ("#" ++ val)
+                    frontendUrl ++ "/articles/" ++ val
 
                 Nothing ->
-                    "/articles"
+                    frontendUrl
 
         label =
             case postLink of
@@ -883,10 +862,10 @@ viewNextLink postLink =
         url =
             case postLink of
                 Just val ->
-                    ("#" ++ val)
+                    frontendUrl ++ "/articles/" ++ val
 
                 Nothing ->
-                    "/articles"
+                    frontendUrl
 
         label =
             case postLink of
@@ -938,22 +917,22 @@ viewComment { node } =
 viewPage : Model -> Html.Html Msg
 viewPage model =
     let
-        title =
+        openGraphTags =
             case model.post of
-                Just val ->
-                    val.title
+                Just { title, slug, excerpt, featuredImage } ->
+                    OpenGraphTags title excerpt (getFeaturedImageSrc featuredImage) (frontendUrl ++ "/articles/" ++ slug)
 
                 Nothing ->
-                    "Christian Muslim Forum Article"
+                    OpenGraphTags "Christian Muslim Forum" "Where Christian and Muslims ideas meet" (getFeaturedImageSrc Nothing) frontendUrl
     in
         node "html"
             []
-            [ head "Article"
+            [ head openGraphTags
             , node "body"
                 []
-                [ div [ id "elm-root" ] [ view model ]
-                , node "script" [ src "article.js" ] []
-                , node "script" [ id "elm-js" ] []
+                [ div [ id "elm-root" ] []
+                , node "script" [ src (frontendUrl ++ "/article.js") ] []
+                , node "script" [ id "elm-js" ] [ text "Elm.Article.embed(document.getElementById(\"elm-root\"))" ]
                 ]
             ]
 
