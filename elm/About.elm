@@ -1,7 +1,7 @@
 module About exposing (..)
 
 import Html exposing (text, div, node)
-import Html.Attributes exposing (href, src, id, content, rel, name)
+import Html.Attributes exposing (href, src, id, content, rel, name, classList)
 import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
@@ -165,10 +165,13 @@ view : Model -> Html.Html Msg
 view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
-        , node "main"
-            [ setInnerHtml model.content
-            , classes [ ph3, pb3, center, mw7, lh_copy ]
-            ]
-            []
+        , if (model.content == "") then
+            node "main" [ classList [ ( "loading", True ) ] ] []
+          else
+            node "main"
+                [ setInnerHtml model.content
+                , classes [ ph3, pb3, center, mw7, lh_copy ]
+                ]
+                []
         , Html.map FooterMsg (Footer.view model.footerModel)
         ]

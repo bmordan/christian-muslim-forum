@@ -483,7 +483,7 @@ view model =
             [ classes [ lh_copy ] ]
             [ div [ setInnerHtml model.content, classes [ ph3, pb3, center, mw7 ] ] []
             , if List.isEmpty model.people then
-                div [] []
+                div [ classList [ ( "loading", True ) ] ] []
               else
                 div [] (List.map (viewPerson False) model.people)
             ]

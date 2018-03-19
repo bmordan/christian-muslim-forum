@@ -659,7 +659,7 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
             [ Html.a
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]
                 , classList [ ( "article-card-img", True ) ]
-                , href (frontendUrl ++ "/article.html#" ++ slug)
+                , href (frontendUrl ++ "/articles/" ++ slug)
                 ]
                 [ div [ classList [ ( "article-card-title", True ) ] ]
                     [ div
