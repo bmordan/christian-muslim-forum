@@ -199,22 +199,12 @@ function formatHome ({pageBy, events, articles, tags}) {
     , articles: listArticle(articles.edges)
     , articlesMore: true
     , articlesNext: "null"
+    , year: null
+    , month: null
+    , day: null
   }
 }
 
-// function formatArticle ({postBy}) {
-//   const {slug} = postBy
-//   return {
-//     post: null,
-//     posts: [],
-//     related: [],
-//     prev: null,
-//     next: null,
-//     slug: slug,
-//     commentCount: null,
-//     comments: []
-//   }
-// }
 
 function formatContact ({pageBy, people}) {
   return {

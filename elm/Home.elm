@@ -6,12 +6,14 @@ import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head, formatDate, forumIcon, getFeaturedImageSrc, OpenGraphTags)
+import Helpers exposing (setInnerHtml, head, formatDate, forumIcon, getFeaturedImageSrc, OpenGraphTags, monthToInt)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
 import Footer
 import Search
+import Date
+import Task
 import Tachyons exposing (..)
 import Tachyons.Classes
     exposing
@@ -106,9 +108,12 @@ init =
             , articles = []
             , articlesMore = True
             , articlesNext = "null"
+            , year = Nothing
+            , month = Nothing
+            , day = Nothing
             }
     in
-        ( model, sendRequest )
+        ( model, Task.perform GotDate <| Date.now )
 
 
 type Msg
@@ -118,6 +123,7 @@ type Msg
     | SearchMsg Search.Msg
     | GetArticles String
     | GotArticles (Result Error ArticlesOnlyData)
+    | GotDate Date.Date
 
 
 type alias Model =
@@ -130,6 +136,9 @@ type alias Model =
     , articles : List Article
     , articlesMore : Bool
     , articlesNext : String
+    , year : Maybe Int
+    , month : Maybe Int
+    , day : Maybe Int
     }
 
 
@@ -305,6 +314,9 @@ decodeModel =
         |> required "articles" (Decode.list decodeArticle)
         |> required "articlesMore" bool
         |> required "articlesNext" string
+        |> required "year" (nullable int)
+        |> required "month" (nullable int)
+        |> required "day" (nullable int)
 
 
 decodeEventsEdges : Decoder EventsEdges
@@ -335,8 +347,8 @@ decodeFeaturedImage =
         |> required "sourceUrl" string
 
 
-pageRequest : Operation Query Variables
-pageRequest =
+pageRequest : Model -> Operation Query Variables
+pageRequest model =
     GraphQl.named "query"
         [ GraphQl.field "pageBy"
             |> GraphQl.withArgument "uri" (GraphQl.string "home")
@@ -345,7 +357,22 @@ pageRequest =
                 , GraphQl.field "content"
                 ]
         , GraphQl.field "events"
-            |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "status", GraphQl.type_ "FUTURE" ) ])
+            |> GraphQl.withArgument "where"
+                (GraphQl.queryArgs
+                    [ ( "status", GraphQl.type_ "FUTURE" )
+                    , ( "dateQuery"
+                      , GraphQl.queryArgs
+                            [ ( "after"
+                              , GraphQl.queryArgs
+                                    [ ( "day", GraphQl.int (Maybe.withDefault 1 model.day) )
+                                    , ( "month", GraphQl.int (Maybe.withDefault 1 model.month) )
+                                    , ( "year", GraphQl.int (Maybe.withDefault 2018 model.year) )
+                                    ]
+                              )
+                            ]
+                      )
+                    ]
+                )
             |> GraphQl.withSelectors
                 [ GraphQl.field "edges"
                     |> GraphQl.withSelectors
@@ -411,9 +438,9 @@ baseRequest =
     GraphQl.query graphqlEndpoint
 
 
-sendRequest : Cmd Msg
-sendRequest =
-    baseRequest pageRequest decodeData
+sendRequest : Model -> Cmd Msg
+sendRequest model =
+    baseRequest (pageRequest model) decodeData
         |> GraphQl.send GotContent
 
 
@@ -527,27 +554,30 @@ update msg model =
                 ( { model | searchModel = updatedSearchModel }, Cmd.map SearchMsg searchCmd )
 
         GetArticles cursor ->
-            ( model, sendArticlesRequest (Debug.log "cursor" cursor) )
+            ( model, sendArticlesRequest cursor )
 
         GotArticles (Ok data) ->
-            let
-                checkingData =
-                    Debug.log "pageInfo" data.articles.pageInfo
-            in
-                ( { model
-                    | articles = model.articles ++ (List.map createArticle data.articles.edges)
-                    , articlesMore = data.articles.pageInfo.hasNextPage
-                    , articlesNext = (Debug.log "endCursor" data.articles.pageInfo.endCursor)
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | articles = model.articles ++ (List.map createArticle data.articles.edges)
+                , articlesMore = data.articles.pageInfo.hasNextPage
+                , articlesNext = data.articles.pageInfo.endCursor
+              }
+            , Cmd.none
+            )
 
         GotArticles (Err err) ->
+            ( model, Cmd.none )
+
+        GotDate date ->
             let
-                checkingData =
-                    Debug.log "articles err" err
+                updatedModel =
+                    { model
+                        | day = Just (Date.day date)
+                        , month = Just (monthToInt (Date.month date))
+                        , year = Just (Date.year date)
+                    }
             in
-                ( model, Cmd.none )
+                ( updatedModel, (sendRequest updatedModel) )
 
 
 openGraphTags : OpenGraphTags
@@ -691,7 +721,7 @@ view model =
             [ div [ setInnerHtml model.content ] []
             ]
         , if List.isEmpty model.events then
-            div [ classList [ ( "loading", True ) ] ] []
+            div [] []
           else
             div [ classes [ pb4, bg_near_white ] ]
                 [ div
