@@ -2,6 +2,8 @@ const build = require('./build')
 const tasks = require('./tasks')
 const buildArticles = require('./articles')
 
+// const cb = () => console.log('done')
+
 // build(tasks[0], cb) // Home
 // build(tasks[1], cb) // About
 // build(tasks[2], cb) // Contact

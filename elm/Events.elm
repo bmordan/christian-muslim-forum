@@ -191,7 +191,22 @@ pageRequest : Operation Query Variables
 pageRequest =
     GraphQl.named "query"
         [ GraphQl.field "events"
-            |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "status", GraphQl.type_ "FUTURE" ) ])
+            |> GraphQl.withArgument "where"
+                (GraphQl.queryArgs
+                    [ ( "status", GraphQl.type_ "FUTURE" )
+                    , ( "dateQuery"
+                      , GraphQl.queryArgs
+                            [ ( "after"
+                              , GraphQl.queryArgs
+                                    [ ( "day", GraphQl.int 20 )
+                                    , ( "month", GraphQl.int 3 )
+                                    , ( "year", GraphQl.int 2018 )
+                                    ]
+                              )
+                            ]
+                      )
+                    ]
+                )
             |> GraphQl.withSelectors
                 [ GraphQl.field "edges"
                     |> GraphQl.withSelectors
