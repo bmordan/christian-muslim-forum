@@ -570,14 +570,14 @@ update msg model =
 
         GotDate date ->
             let
-                updatedModel =
+                modelWithDate =
                     { model
                         | day = Just (Date.day date)
                         , month = Just (monthToInt (Date.month date))
                         , year = Just (Date.year date)
                     }
             in
-                ( updatedModel, (sendRequest updatedModel) )
+                ( modelWithDate, (sendRequest modelWithDate) )
 
 
 openGraphTags : OpenGraphTags

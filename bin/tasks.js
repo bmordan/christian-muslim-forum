@@ -24,6 +24,10 @@ const {
   , objOf
 } = require('ramda')
 
+const date = new Date()
+const year = date.getYear() -100 + 2000
+const month = date.getMonth() + 1
+const day = date.getDate()
 
 module.exports = [
   {
@@ -161,7 +165,9 @@ module.exports = [
     moduleName: 'Events',
     distFolder: 'events',
     query: `{
-      events(where: {status: FUTURE}){
+      events(where: {
+        status: FUTURE, dateQuery: {after: {day: ${day}, month: ${month}, year: ${year}}}
+      }){
         edges{
           node{
             slug
@@ -250,6 +256,8 @@ function formatSearch ({tags}) {
 function formatEvents ({events}) {
   return {
     events: listEvent(events.edges),
-    event: null
+    year: null,
+    month: null,
+    day: null
   }
 }
