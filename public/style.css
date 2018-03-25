@@ -141,6 +141,12 @@ main {
   background-position: center center;
 }
 
+.bg_cmf_christian {
+  background-image: url(cmf_pattern_christian.svg);
+  background-size: 90px 90px;
+  background-position: center center;
+}
+
 .header-img {
   position: absolute;
   width: 160px;
@@ -345,6 +351,9 @@ main {
 @media screen and (min-width: 48rem) {
   .result-img {
     background-position: center center;
+  }
+  .bg_cmf_christian {
+    background-size: 135px 135px;
   }
 }
 
