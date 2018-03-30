@@ -1,9 +1,13 @@
 const build = require('./build')
 const tasks = require('./tasks')
 const buildArticles = require('./articles')
+const buildEvents = require('./events')
 
 function buildTasks (tasks) {
-  if (!tasks.length) return buildArticles(true, null)
+  if (!tasks.length) {
+    buildArticles(true, null)
+    return buildEvents()
+  }
 
   build(tasks.pop(), (err, msg) => {
     if (err) throw err
@@ -21,3 +25,5 @@ buildTasks(tasks)
 // build(tasks[3], cb) // People
 // build(tasks[4], cb) // Events
 // build(tasks[5], cb) // Article
+
+// buildEvents()

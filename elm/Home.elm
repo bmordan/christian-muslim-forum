@@ -626,14 +626,14 @@ viewAuthor author =
             ]
 
 
-viewEvent : Event -> Html.Html Msg
+viewEvent : Event -> Html.Html msg
 viewEvent { title, slug, excerpt, date, featuredImage } =
     let
         image =
             getFeaturedImageSrc featuredImage
     in
         Html.a
-            [ href (frontendUrl ++ "/events/index.html#" ++ slug)
+            [ href (frontendUrl ++ "/events/" ++ slug)
             , classList [ ( "event-card", True ) ]
             , classes [ flex, items_center, justify_start, mb3, link, bg_white, near_black, lh_title, mw7, center, w_100 ]
             ]
@@ -723,7 +723,7 @@ view model =
         , if List.isEmpty model.events then
             div [] []
           else
-            div [ classes [ pb4, bg_near_white ] ]
+            div [ classes [ pb4, bg_near_white ], classList [ ( "bg_cmf_christian", True ) ] ]
                 [ div
                     [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                     , classes [ f2, ph2, pv4, w_100, center, mw7 ]
