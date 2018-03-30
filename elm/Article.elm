@@ -702,9 +702,6 @@ update msg model =
     case msg of
         Slug location ->
             let
-                loc =
-                    Debug.log "loc" location
-
                 slug =
                     String.dropLeft 1 location.hash
             in
@@ -750,19 +747,19 @@ update msg model =
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
 
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
-
         SearchMsg subMsg ->
             let
                 ( updatedSearchModel, searchCmd ) =
                     Search.update subMsg model.searchModel
             in
                 ( { model | searchModel = updatedSearchModel }, Cmd.map SearchMsg searchCmd )
+
+        FooterMsg subMsg ->
+            let
+                ( updatedFooterModel, footerCmd ) =
+                    Footer.update subMsg model.footerModel
+            in
+                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
 
 createPerson : Author -> Person
@@ -944,7 +941,7 @@ viewRelatedPosts model =
     else
         div [ classes [ fl, w_100, w_two_thirds_ns ] ]
             [ div
-                [ classes [ f2, pa2, pv4 ]
+                [ classes [ f2, pa2 ]
                 , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                 ]
                 [ text "Related Articles" ]

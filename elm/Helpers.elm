@@ -8,6 +8,7 @@ import Json.Encode as Encode
 import Json.Decode as Decode
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Regex exposing (replace)
 import Date
 import Date.Format as Format
 import Tachyons exposing (..)
@@ -140,7 +141,7 @@ forumIcon commentCount =
 
 trim160 : String -> String
 trim160 str =
-    ((String.slice 0 160 str) ++ "...")
+    ((String.slice 0 120 str) ++ "...")
 
 
 head : OpenGraphTags -> Html.Html msg
@@ -354,3 +355,11 @@ monthToInt month =
 
         Date.Dec ->
             12
+
+
+stripPtags : String -> String
+stripPtags str =
+    String.split "<p>" str
+        |> String.join ""
+        |> String.split "</p>"
+        |> String.join ""

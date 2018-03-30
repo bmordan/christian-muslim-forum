@@ -1,16 +1,18 @@
-module Events exposing (..)
+module Event exposing (..)
 
-import Html exposing (text, div, node)
+import Html exposing (text, div, node, span)
 import Html.Attributes exposing (href, src, id, content, rel, name, classList, style, name)
 import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional)
-import Helpers exposing (setInnerHtml, head, formatDate, getFeaturedImageSrc, OpenGraphTags, monthToInt)
+import Helpers exposing (setInnerHtml, head, formatDate, getFeaturedImageSrc, OpenGraphTags, monthToInt, stripPtags)
 import GraphQl exposing (Operation, Variables, Query, Named)
 import Config exposing (graphqlEndpoint, frontendUrl)
 import Header
 import Footer
+import Search
+import Navigation
 import Dom exposing (Error)
 import Dom.Scroll exposing (toTop)
 import Task
@@ -55,8 +57,10 @@ import Tachyons.Classes
         , tc
         , tl
         , tr
+        , tr_ns
         , tl_ns
         , dn_m
+        , dn_l
         , db_ns
         , dn
         , pa1
@@ -69,11 +73,16 @@ import Tachyons.Classes
         , lh_title
         , lh_copy
         , overflow_y_scroll
+        , w_third_ns
+        , w_two_thirds_ns
+        , fl
+        , nt2
+        , ph4
         )
 
 
 main =
-    Html.program
+    Navigation.program Slug
         { init = init
         , update = update
         , view = view
@@ -81,11 +90,13 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
     ( { headerModel = Header.initModel
       , footerModel = Footer.initModel
+      , searchModel = Search.initModel
       , events = []
+      , event = maybeSlug location
       , year = Nothing
       , month = Nothing
       , day = Nothing
@@ -98,13 +109,17 @@ type Msg
     = GotContent (Result Http.Error Data)
     | HeaderMsg Header.Msg
     | FooterMsg Footer.Msg
+    | SearchMsg Search.Msg
+    | Slug Navigation.Location
     | GotDate Date.Date
 
 
 type alias Model =
     { headerModel : Header.Model
     , footerModel : Footer.Model
+    , searchModel : Search.Model
     , events : List Event
+    , event : Maybe String
     , year : Maybe Int
     , month : Maybe Int
     , day : Maybe Int
@@ -131,6 +146,7 @@ type alias EventNode =
 type alias Event =
     { slug : String
     , title : String
+    , excerpt : String
     , content : String
     , date : String
     , featuredImage : Maybe FeaturedImage
@@ -143,6 +159,10 @@ type alias HeaderModel =
 
 type alias FooterModel =
     Footer.Model
+
+
+type alias SearchModel =
+    Search.Model
 
 
 decodeData : Decoder Data
@@ -168,6 +188,7 @@ decodeEvent =
     decode Event
         |> required "slug" string
         |> required "title" string
+        |> required "excerpt" string
         |> required "content" string
         |> required "date" string
         |> required "featuredImage" (nullable decodeFeaturedImage)
@@ -184,7 +205,9 @@ decodeModel =
     decode Model
         |> required "headerModel" Header.decodeModel
         |> required "footerModel" Footer.decodeModel
+        |> required "searchModel" Search.decodeModel
         |> required "events" (Decode.list decodeEvent)
+        |> required "event" (nullable string)
         |> required "year" (nullable int)
         |> required "month" (nullable int)
         |> required "day" (nullable int)
@@ -217,6 +240,7 @@ pageRequest model =
                             |> GraphQl.withSelectors
                                 [ GraphQl.field "slug"
                                 , GraphQl.field "title"
+                                , GraphQl.field "excerpt"
                                 , GraphQl.field "content"
                                 , GraphQl.field "date"
                                 , GraphQl.field "featuredImage"
@@ -246,14 +270,14 @@ sendRequest model =
 
 createEvent : EventNode -> Event
 createEvent { node } =
-    Event node.slug node.title node.content node.date node.featuredImage
+    Event node.slug node.title node.excerpt node.content node.date node.featuredImage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotContent (Ok data) ->
-            ( { model | events = List.map createEvent data.events.edges }, Cmd.none )
+            ( { model | events = List.map createEvent data.events.edges }, Cmd.map SearchMsg Search.sendTagsRequest )
 
         GotContent (Err err) ->
             ( model, Cmd.none )
@@ -272,6 +296,13 @@ update msg model =
             in
                 ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
+        SearchMsg subMsg ->
+            let
+                ( updatedSearchModel, searchCmd ) =
+                    Search.update subMsg model.searchModel
+            in
+                ( { model | searchModel = updatedSearchModel }, Cmd.map SearchMsg searchCmd )
+
         GotDate date ->
             let
                 modelWithDate =
@@ -283,23 +314,62 @@ update msg model =
             in
                 ( modelWithDate, (sendRequest modelWithDate) )
 
+        Slug location ->
+            ( { model | event = maybeSlug location }, Cmd.none )
 
-openGraphTags : OpenGraphTags
-openGraphTags =
-    OpenGraphTags "Events" "What's on? Find out here" (getFeaturedImageSrc Nothing) (frontendUrl ++ "/events")
+
+maybeSlug : Navigation.Location -> Maybe String
+maybeSlug location =
+    String.split "/events/" location.pathname
+        |> List.reverse
+        |> List.head
+        |> Maybe.withDefault "/"
+        |> String.slice 0 -1
+        |> Just
+
+
+openGraphTags : Model -> OpenGraphTags
+openGraphTags model =
+    let
+        defaultOpenGraphTags =
+            OpenGraphTags "Event" "Christian muslim forum event" (getFeaturedImageSrc Nothing) (frontendUrl ++ "/events")
+    in
+        case model.event of
+            Just slug ->
+                let
+                    event =
+                        List.filter (\evt -> evt.slug == slug) model.events
+                            |> List.head
+                in
+                    case event of
+                        Just { slug, title, excerpt, featuredImage } ->
+                            OpenGraphTags title (stripPtags excerpt) (getFeaturedImageSrc featuredImage) (frontendUrl ++ "/events/" ++ slug)
+
+                        Nothing ->
+                            defaultOpenGraphTags
+
+            Nothing ->
+                defaultOpenGraphTags
 
 
 viewPage : Model -> Html.Html Msg
 viewPage model =
     node "html"
         []
-        [ head openGraphTags
+        [ head (openGraphTags model)
         , node "body"
             []
-            [ div [ id "elm-root" ] [ view model ]
-            , node "script" [ src "events.js" ] []
-            , node "script" [ id "elm-js" ] []
+            [ div [ id "elm-root" ] []
+            , node "script" [ src (frontendUrl ++ "/events/bundle.js") ] []
+            , node "script" [ id "elm-js" ] [ text "Elm.Event.embed(document.getElementById(\"elm-root\"))" ]
             ]
+        ]
+
+
+viewShares : Html.Html msg
+viewShares =
+    div [ classes [ pa2, mw7, center ] ]
+        [ div [ classList [ ( "addthis_inline_share_toolbox", True ) ] ] []
         ]
 
 
@@ -319,7 +389,7 @@ viewDate date =
 
 
 viewEvent : Event -> Html.Html Msg
-viewEvent { title, slug, content, date, featuredImage } =
+viewEvent { title, slug, excerpt, content, date, featuredImage } =
     let
         image =
             getFeaturedImageSrc featuredImage
@@ -346,28 +416,111 @@ viewEvent { title, slug, content, date, featuredImage } =
                     ]
                 ]
             , div [ classes [ pa2 ], setInnerHtml content ] []
+            , viewShares
+            ]
+
+
+viewSmallEvent : Event -> Html.Html Msg
+viewSmallEvent { title, slug, excerpt, date, featuredImage } =
+    let
+        image =
+            getFeaturedImageSrc featuredImage
+    in
+        Html.a
+            [ href ("/events/" ++ slug)
+            , classList [ ( "event-card", True ) ]
+            , classes [ flex, items_center, justify_start, link, bg_white, near_black, lh_title, mw7, center, w_100 ]
+            ]
+            [ div
+                [ classList [ ( "event-card-img", True ) ]
+                , style [ ( "background-image", "url(" ++ image ++ ")" ) ]
+                , classes [ flex_none ]
+                ]
+                []
+            , div [ classes [ pl2 ] ]
+                [ div
+                    [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+                    , classes [ link ]
+                    , setInnerHtml title
+                    ]
+                    []
+                , div
+                    [ setInnerHtml excerpt
+                    ]
+                    []
+                ]
+            , div
+                [ classes [ flex_none, flex, flex_column, items_center, justify_between ]
+                , classList [ ( "event-card-date", True ) ]
+                ]
+                [ div [ classes [ bg_dark_red, white, w_100, tc ] ] [ text (formatDate "%b" date) ]
+                , div [ classes [ f2, f2_m, f1_ns, b, tc, w_100, link ] ] [ text (formatDate "%d" date) ]
+                , div
+                    [ classes [ w_100, pa1, dn, db_ns, dn_m, w_100, tc, bg_light_gray, near_black ]
+                    ]
+                    [ text (formatDate "%A" date) ]
+                ]
             ]
 
 
 view : Model -> Html.Html Msg
 view model =
-    div []
-        [ Html.map HeaderMsg (Header.view model.headerModel)
-        , node "main"
-            [ classes [ pb3, center, mw7, lh_copy ]
-            , style [ ( "margin-top", "-4rem" ) ]
-            ]
-            [ if List.isEmpty model.events then
-                div [ classList [ ( "loading", True ) ] ] []
-              else
-                div [ classes [ pb4 ] ]
-                    [ div
-                        [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
-                        , classes [ f2, ph2, pv4, w_100, center, mw7, tr ]
-                        ]
-                        [ text "Events" ]
-                    , div [] (List.map viewEvent (List.reverse model.events))
+    let
+        event =
+            case model.event of
+                Just slug ->
+                    let
+                        featureEvent =
+                            List.filter (\e -> e.slug == slug) model.events
+                                |> List.head
+                    in
+                        case featureEvent of
+                            Just evt ->
+                                viewEvent evt
+
+                            Nothing ->
+                                div [] []
+
+                Nothing ->
+                    div [] []
+
+        events =
+            case model.event of
+                Just slug ->
+                    List.filter (\e -> e.slug /= slug) model.events
+
+                Nothing ->
+                    []
+    in
+        div []
+            [ Html.map HeaderMsg (Header.view model.headerModel)
+            , node "main"
+                [ classes [ pb3, center, mw7, lh_copy ]
+                , style [ ( "margin-top", "-4rem" ) ]
+                ]
+                [ event ]
+            , div [ classes [ fl, w_100, w_two_thirds_ns ] ]
+                [ div
+                    [ classes [ f2, pv2, ph4 ]
+                    , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                     ]
+                    [ text "Other Events" ]
+                , div
+                    [ classList [ ( "bg_cmf_christian", True ) ]
+                    , classes [ pv4 ]
+                    ]
+                    (List.map viewSmallEvent events)
+                ]
+            , div [ classes [ fl, w_100, w_third_ns ] ]
+                [ div
+                    [ classes [ f2, pv2, tr_ns, ph4 ]
+                    , classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
+                    ]
+                    [ text "Search"
+                    , span [ classes [ dn_m ] ] [ text " Articles" ]
+                    ]
+                , Html.map SearchMsg (Search.view model.searchModel)
+                ]
+            , Html.map FooterMsg (Footer.view model.footerModel)
+            , node "script" [ src "http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5a59d97a9c28847a" ] []
             ]
-        , Html.map FooterMsg (Footer.view model.footerModel)
-        ]

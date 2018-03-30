@@ -143,7 +143,7 @@ main {
 
 .bg_cmf_christian {
   background-image: url(cmf_pattern_christian.svg);
-  background-size: 90px 90px;
+  background-size: 45px 45px;
   background-position: center center;
 }
 
@@ -353,7 +353,7 @@ main {
     background-position: center center;
   }
   .bg_cmf_christian {
-    background-size: 135px 135px;
+    background-size: 90px 90px;
   }
 }
 

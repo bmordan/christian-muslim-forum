@@ -183,7 +183,7 @@ module.exports = [
       }
     }`,
     formatter: formatEvents,
-    make: "elm-make ./elm/Events.elm --output ./dist/events/bundle.js --yes"
+    make: "elm-make ./elm/Events.elm --output ./dist/events/events.js --yes"
   }
 ]
 

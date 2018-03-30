@@ -626,7 +626,7 @@ viewAuthor author =
             ]
 
 
-viewEvent : Event -> Html.Html Msg
+viewEvent : Event -> Html.Html msg
 viewEvent { title, slug, excerpt, date, featuredImage } =
     let
         image =
