@@ -8,6 +8,7 @@
     "watch": "onchange './elm/*.elm' './public/*' './bin/*' -v -i -- npm start"
   },
   "dependencies": {
+    "async": "^2.6.0",
     "body-parser": "^1.18.2",
     "dotenv": "^5.0.0",
     "elm-static-html-lib": "^0.1.0",

@@ -1,13 +1,18 @@
 require('dotenv').config()
 const express = require('express')
 const app = express()
+const async = require('async')
 const bodyParser = require('body-parser')
 const Joi = require('joi-browser')
 const path = require('path')
 const request = require('request-promise')
+const build = require('./bin/main')
 const mailChimpBaseUrl = "https://us11.api.mailchimp.com/3.0"
 const mailChimpListUrl = `/lists/${process.env.MAILCHIMP_LIST}/members/`
 const mailChimpAuthorization = `apikey ${process.env.MAILCHIMP_API}`
+
+const queue = async.queue((task, complete) => task(complete), 1)
+queue.drain(() => console.log('queue.drained'))
 
 const bodySchema = Joi.object({
   email: Joi.string().email().required(),
@@ -54,6 +59,12 @@ app.post('/subscribe', (req, res) => {
       return res.send(mailchimp_err)
     })
   })
+})
+
+app.get('/build', (req, res) => {
+  console.log('\nadding to queue of ', queue.length())
+  queue.push(build)
+  return res.send()
 })
 
 app.listen(process.env.BUILD_SERVER_PORT, () => console.log(`build server running on ${process.env.BUILD_SERVER_PORT}`))
