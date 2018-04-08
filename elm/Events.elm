@@ -324,9 +324,10 @@ viewEvent { title, slug, content, date, featuredImage } =
         image =
             getFeaturedImageSrc featuredImage
     in
-        div
+        Html.a
             [ id slug
             , classList [ ( "event", True ) ]
+            , href (frontendUrl ++ "/events/" ++ slug)
             ]
             [ div
                 [ style [ ( "background-image", "url(" ++ image ++ ")" ) ]

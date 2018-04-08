@@ -2,13 +2,13 @@ const baseUrl = "http://46.101.6.182/graphql"
 const request = require('graphql-request').request
 const path = require('path')
 const fs = require('fs')
-const { execSync } = require('child_process')
+const { exec } = require('child_process')
 const { elmStaticHtml } = require('elm-static-html-lib')
 const { pipe, assoc, tap, apply, contains } = require('ramda')
 const elmRoot = path.join(__dirname, '..')
 const distRoot = path.join(__dirname, '..', 'dist')
 
-module.exports = function ({moduleName, distFolder, query, formatter, make}, cb) {
+module.exports = function ({moduleName, distFolder, query, formatter, make}, done) {
   const fileName = moduleName === "Article" ? "article.html" : "index.html"
   const distPath = path.join(distRoot, distFolder, fileName)
 
@@ -37,6 +37,6 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}, cb)
   request(baseUrl, query)
     .then(res => elmStaticHtml(elmRoot, `${moduleName}.viewPage`, formatResponse(res)))
     .then(html => writeFile(html))
-    .then(() => cb(null, execSync(make)))
-    .catch(err => cb(err))
+    .then(exec.bind(null, make, done))
+    .catch(err => done(err))
 }

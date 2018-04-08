@@ -62,7 +62,7 @@ const stripExcerpt = pipe(
 const createConfig = (events, event) => {
   const slug = event.node.slug
 
-  createFolder(slug)
+  createFolder(path.join(__dirname, '..', 'dist', 'events', slug))
 
   const transform = {
     excerpt: stripExcerpt
@@ -90,12 +90,7 @@ const createConfig = (events, event) => {
 }
 
 const renderHtmls = ({events}) => {
-  process.chdir(path.join(distRoot, 'events'))
-
   const configs = map(partial(createConfig, [events.edges]), events.edges)
-
-  process.chdir(path.join(elmRoot))
-
   return multiple(elmRoot, configs)
 }
 
@@ -104,15 +99,13 @@ const writeFile = (generatedHtmls, resolve, reject) => {
 
   const { generatedHtml, fileOutputName } = generatedHtmls.pop()
 
-  fs.writeFile(path.join(process.cwd(), fileOutputName, 'index.html'), generatedHtml, (err) => {
+  fs.writeFile(path.join(__dirname, '..', 'dist', 'events', fileOutputName, 'index.html'), generatedHtml, (err) => {
     if (err) return reject(err)
     return writeFile(generatedHtmls, resolve, reject)
   })
 }
 
 const writeFilesToFolders = (generatedHtmls) => {
-  process.chdir(path.join(distRoot, 'events'))
-
   return new Promise(function (resolve, reject) {
     return writeFile(generatedHtmls, resolve, reject)
   })
@@ -120,8 +113,6 @@ const writeFilesToFolders = (generatedHtmls) => {
 
 const writeJs = () => {
   return new Promise(function (resolve, reject) {
-    process.chdir(path.join(elmRoot))
-
     exec('elm-make ./elm/Event.elm --output ./dist/events/bundle.js --yes', (err) => {
       return err ? reject(err) : resolve()
     })
@@ -129,10 +120,14 @@ const writeJs = () => {
 }
 
 
-module.exports = function buildEvents () {
+module.exports = function buildEvents (done) {
   request(baseUrl, query)
     .then(renderHtmls)
     .then(writeFilesToFolders)
     .then(writeJs)
+    .then(() => {
+      console.log('build events done')
+      return done()
+    })
     .catch(err => console.error(err))
 }

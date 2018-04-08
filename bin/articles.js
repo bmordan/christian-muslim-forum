@@ -61,7 +61,7 @@ const stripExcerpt = pipe(
 const configArticleCreateFolder = ({node}) => {
   const { title, slug, excerpt, featuredImage, date } = node
 
-  createFolder(slug)
+  createFolder(path.join(__dirname, '..', 'dist', 'articles', slug))
 
   const article = {
     slug,
@@ -114,16 +114,12 @@ let shouldGetMoreArticles = true
 let cursor = null
 
 const renderArticlesToHtml = ({posts}) => {
-  process.chdir(path.join(distRoot, 'articles'))
-
   const {pageInfo, edges} = posts
 
   shouldGetMoreArticles = pageInfo.hasNextPage
   cursor = pageInfo.endCursor
 
   const configs = map(configArticleCreateFolder, edges)
-
-  process.chdir(path.join(elmRoot))
 
   return multiple(elmRoot, configs)
 }
@@ -133,15 +129,13 @@ const writeFile = (generatedHtmls, resolve, reject) => {
 
   const { generatedHtml, fileOutputName } = generatedHtmls.pop()
 
-  fs.writeFile(path.join(process.cwd(), fileOutputName, 'index.html'), generatedHtml, (err) => {
+  fs.writeFile(path.join(__dirname, '..', 'dist', 'articles', fileOutputName, 'index.html'), generatedHtml, (err) => {
     if (err) return reject(err)
     return writeFile(generatedHtmls, resolve, reject)
   })
 }
 
 const writeFilesToFolders = (generatedHtmls) => {
-  process.chdir(path.join(distRoot, 'articles'))
-
   return new Promise(function (resolve, reject) {
     return writeFile(generatedHtmls, resolve, reject)
   })
@@ -149,8 +143,6 @@ const writeFilesToFolders = (generatedHtmls) => {
 
 const writeJs = () => {
   return new Promise(function (resolve, reject) {
-    process.chdir(path.join(elmRoot))
-
     exec('elm-make ./elm/Article.elm --output ./dist/article.js --yes', (err) => {
       return err ? reject(err) : resolve()
     })
@@ -158,14 +150,19 @@ const writeJs = () => {
 }
 
 
-function buildArticles () {
-  if (!shouldGetMoreArticles) return
+function buildArticles (done) {
+  if (!shouldGetMoreArticles) {
+    shouldGetMoreArticles = true
+    cursor = null
+    console.log('build articles done')
+    return done()
+  }
 
   request(baseUrl, query(cursor))
     .then(renderArticlesToHtml)
     .then(writeFilesToFolders)
     .then(writeJs)
-    .then(() => buildArticles(false, cursor))
+    .then(() => buildArticles(done))
     .catch(err => console.error(err))
 }
 

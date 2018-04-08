@@ -160,30 +160,6 @@ module.exports = [
     }`,
     formatter: formatContact,
     make: "elm-make ./elm/People.elm --output ./dist/people/bundle.js --yes"
-  },
-  {
-    moduleName: 'Events',
-    distFolder: 'events',
-    query: `{
-      events(where: {
-        status: FUTURE, dateQuery: {after: {day: ${day}, month: ${month}, year: ${year}}}
-      }){
-        edges{
-          node{
-            slug
-            title
-            excerpt
-            content
-            date
-            featuredImage{
-              sourceUrl
-            }
-          }
-        }
-      }
-    }`,
-    formatter: formatEvents,
-    make: "elm-make ./elm/Events.elm --output ./dist/events/events.js --yes"
   }
 ]
 

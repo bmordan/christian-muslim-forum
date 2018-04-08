@@ -1,29 +1,12 @@
-const build = require('./build')
-const tasks = require('./tasks')
+const async = require('async')
 const buildArticles = require('./articles')
 const buildEvents = require('./events')
-
-function buildTasks (tasks) {
-  if (!tasks.length) {
-    buildArticles(true, null)
-    return buildEvents()
-  }
-
-  build(tasks.pop(), (err, msg) => {
-    if (err) throw err
-    buildTasks(tasks)
-  })
+const buildPages = require('./pages')
+const tasks = [buildPages, buildEvents, buildArticles]
+const noop = err => {
+  if (err) return console.error(err)
+  console.log('Success! build tasks complete')
 }
-
-buildTasks(tasks)
-
-// const cb = () => console.log('done')
-
-// build(tasks[0], cb) // Home
-// build(tasks[1], cb) // About
-// build(tasks[2], cb) // Contact
-// build(tasks[3], cb) // People
-// build(tasks[4], cb) // Events
-// build(tasks[5], cb) // Article
-
-// buildEvents()
+const build = done => async.series(tasks, done)
+module.exports = build
+// build(noop)
