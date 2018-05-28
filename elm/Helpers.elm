@@ -108,7 +108,6 @@ chevBlue =
 navItems : List String
 navItems =
     [ "home"
-    , "events"
     , "people"
     , "about"
     , "contact"
@@ -177,6 +176,7 @@ head { title, description, image, url } =
         , node "meta" [ Html.Attributes.id "og:image", Html.Attributes.property "property" (Encode.string "og:image"), content image ] []
         , node "meta" [ Html.Attributes.id "og:url", Html.Attributes.property "property" (Encode.string "og:url"), content url ] []
         , node "meta" [ Html.Attributes.id "og:type", Html.Attributes.property "property" (Encode.string "og:type"), content "article" ] []
+        , node "meta" [ Html.Attributes.id "og:locale", Html.Attributes.property "property" (Encode.string "og:locale"), content "en_GB" ] []
         , node "title" [] [ Html.text title ]
         ]
 

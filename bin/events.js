@@ -126,7 +126,7 @@ module.exports = function buildEvents (done) {
     .then(writeFilesToFolders)
     .then(writeJs)
     .then(() => {
-      console.log('build events done')
+      console.log(new Date(), ' build events done')
       return done()
     })
     .catch(err => console.error(err))

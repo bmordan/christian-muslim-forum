@@ -12,7 +12,7 @@ const mailChimpListUrl = `/lists/${process.env.MAILCHIMP_LIST}/members/`
 const mailChimpAuthorization = `apikey ${process.env.MAILCHIMP_API}`
 
 const queue = async.queue((task, complete) => task(complete), 1)
-queue.drain(() => console.log('queue.drained'))
+queue.drain(() => console.log(new Date(), ' queue.drained'))
 
 const bodySchema = Joi.object({
   email: Joi.string().email().required(),
@@ -61,10 +61,18 @@ app.post('/subscribe', (req, res) => {
   })
 })
 
-app.get('/build', (req, res) => {
+app.get('/api/build', (req, res) => {
+  console.log('\nfrom', req.referrer)
   console.log('\nadding to queue of ', queue.length())
   queue.push(build)
-  return res.send()
+  return res.send({queue: queue.length()})
+})
+
+app.get('/api/empty-queue', (req, res) => {
+  queue.pause()
+  queue.remove(({data, priority}) => true)
+  queue.resume()
+  return res.send({queue: queue.length()})
 })
 
 app.listen(process.env.BUILD_SERVER_PORT, () => console.log(`build server running on ${process.env.BUILD_SERVER_PORT}`))

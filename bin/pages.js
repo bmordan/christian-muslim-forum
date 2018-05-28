@@ -4,7 +4,7 @@ const build = require('./build')
 function buildPages (pages, done) {
   if (!pages.length) {
     pages = require('./tasks')
-    console.log('build pages done')
+    console.log(new Date(), ' build pages done')
     return done()
   }
 

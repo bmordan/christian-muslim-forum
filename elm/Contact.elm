@@ -296,7 +296,7 @@ sendRequest =
 findFaith : List SlugNode -> String
 findFaith edges =
     List.map (\{ node } -> node.slug) edges
-        |> List.filter (\slug -> (slug == "christian" || slug == "muslim"))
+        |> List.filter (\slug -> (slug == "christian" || slug == "muslim" || slug == "buddhist"))
         |> List.head
         |> Maybe.withDefault ""
 

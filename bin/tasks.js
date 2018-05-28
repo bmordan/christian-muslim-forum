@@ -202,7 +202,7 @@ const arrayOfTags = pipe(
 
 const getFaith = pipe(
   arrayOfTags
-  , filter(contains(__, ['christian', 'muslim']))
+  , filter(contains(__, ['christian', 'muslim', 'buddhist']))
   , head
 )
 

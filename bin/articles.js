@@ -154,7 +154,7 @@ function buildArticles (done) {
   if (!shouldGetMoreArticles) {
     shouldGetMoreArticles = true
     cursor = null
-    console.log('build articles done')
+    console.log(new Date(), ' build articles done')
     return done()
   }
 
