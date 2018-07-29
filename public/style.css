@@ -75,7 +75,36 @@ main {
 }
 
 .loading::after{
-  content: "loading ... المحمل"
+  content: "";
+  animation: loading 6s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes loading {
+  0% {
+    color: white;
+    content: "loading ...";
+  }
+  25% {
+    color: var(--cmf-teal);
+    content: "loading ...";
+  }
+  50% {
+    color: white;
+    content: "loading ...";
+  }
+  51% {
+    color: white;
+    content: "... المحمل";
+  }
+  75% {
+    color: var(--cmf-teal);
+    content: "... المحمل";
+  }
+  100% {
+    color: white;
+    content: "... المحمل";
+  }
 }
 
 .modal {

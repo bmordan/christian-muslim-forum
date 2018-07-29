@@ -19,6 +19,7 @@ import Tachyons.Classes
     exposing
         ( center
         , mw7
+        , mw6
         , mt6
         , mb2
         , mb3
@@ -27,6 +28,7 @@ import Tachyons.Classes
         , pa1
         , pa2
         , pa3
+        , pv6
         , ph1
         , ph2
         , ph3
@@ -35,8 +37,9 @@ import Tachyons.Classes
         , pl2
         , ph2
         , pb2
-        , pb4
         , pr2
+        , pt6
+        , pb4
         , pr2_ns
         , tc
         , tr
@@ -716,9 +719,10 @@ view model =
     div []
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , div
-            [ classes [ center, mw7, lh_copy, ph3, mt6, pb4 ]
+            [ classes [ center, lh_copy, pt6, pb4, white ]
+            , classList [ ( "bg_cmf_islamic", True ) ]
             ]
-            [ div [ setInnerHtml model.content ] []
+            [ div [ setInnerHtml model.content, classes [ mw6, center, ph3 ] ] []
             ]
         , if List.isEmpty model.events then
             div [] []
