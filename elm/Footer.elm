@@ -296,6 +296,12 @@ view model =
                             ]
                             [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Follow Us" ]
                             ]
+                        , Html.a
+                            [ href "https://cafdonate.cafonline.org/695#/DonationDetails"
+                            , classes [ link ]
+                            ]
+                            [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Donate" ]
+                            ]
                         ]
                     ]
                 ]

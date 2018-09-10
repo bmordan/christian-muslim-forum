@@ -3,7 +3,6 @@ const express = require('express')
 const app = express()
 const async = require('async')
 const bodyParser = require('body-parser')
-const Joi = require('joi-browser')
 const path = require('path')
 const request = require('request-promise')
 const build = require('./bin/main')
@@ -14,18 +13,21 @@ const mailChimpAuthorization = `apikey ${process.env.MAILCHIMP_API}`
 const queue = async.queue((task, complete) => task(complete), 1)
 queue.drain(() => console.log(new Date(), ' queue.drained'))
 
-const bodySchema = Joi.object({
-  email: Joi.string().email().required(),
-  fname: Joi.string().min(1).required(),
-  lname: Joi.string().min(1).required()
-})
+const validate = (body, cb) => {
+  const props = ['email', 'fname', 'lname']
+  const validProps = Object.keys(body).every(key => props.indexOf(key) > -1)
+  const validValues = props.every(prop => typeof body[prop] === 'string')
+  const valid = [validProps, validValues].every(item => !!item)
+  
+  cb(valid)
+}
 
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname, 'dist')))
 
 app.post('/subscribe', (req, res) => {
-  Joi.validate(req.body, bodySchema, (err, value) => {
-    if (err) return res.send(err)
+  validate(req.body, (valid) => {
+    if (!valid) return res.send(err)
 
     const { email, fname, lname } = req.body
 
