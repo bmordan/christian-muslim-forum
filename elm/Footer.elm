@@ -237,6 +237,7 @@ modal model =
                 , classList [ ( "modal-box", True ) ]
                 ]
                 [ div [ classes [ fr, pa2, tr ], onClick CloseModal ] [ text "close" ]
+                , div [ classes [ pa2, tc ] ] [text "Subscribe to our email newsletter"]
                 , div [ classes [ flex, flex_column ] ]
                     [ input
                         [ name "fname"
