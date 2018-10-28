@@ -691,7 +691,7 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
                 |> String.join ""
                 |> String.split "</p>"
                 |> String.join ""
-                |> String.slice 0 180
+                |> String.slice 0 160
     in
         div
             [ classes [ flex, flex_column, justify_start, fl, w_100, w_50_ns, pa1 ]

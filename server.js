@@ -42,7 +42,7 @@ app.post('/subscribe', (req, res) => {
     }
 
     request({
-      method: 'POST',
+      method: 'PUT',
       uri: mailChimpBaseUrl + mailChimpListUrl,
       headers: {
         'Content-Type': 'application/json',

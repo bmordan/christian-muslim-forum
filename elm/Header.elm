@@ -117,14 +117,8 @@ view model =
             , Html.Attributes.id "header-nav"
             ]
             [ nav
-                [ classes [ flex, items_center, fr_ns, pv2 ]
+                [ classes [ flex, items_center, justify_end, fr_ns, pv2 ]
                 ]
                 (List.map createNavItem navItems)
             ]
-        , div
-            [ classes [ flex_none, items_center, justify_end, pl2, pv2, pr1, dn_ns ]
-            , onClick Scroll
-            , flipChev model
-            ]
-            [ chev ]
         ]

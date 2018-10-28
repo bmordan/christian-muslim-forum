@@ -107,6 +107,20 @@ module.exports = [
     make: "elm-make ./elm/About.elm --output ./dist/about/bundle.js --yes"
   },
   {
+    moduleName: 'Resources',
+    distFolder: 'resources',
+    query: `{
+      pageBy(uri: "resources") {
+        content
+      }
+    }`,
+    formatter: pipe(
+      prop('pageBy')
+      , pick(['content'])
+    ),
+    make: "elm-make ./elm/Resources.elm --output ./dist/resources/bundle.js --yes"
+  },
+  {
     moduleName: 'Contact',
     distFolder: 'contact',
     query: `{

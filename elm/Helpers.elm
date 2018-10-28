@@ -111,6 +111,7 @@ navItems =
     , "people"
     , "about"
     , "contact"
+    , "resources"
     ]
 
 
@@ -275,7 +276,7 @@ formatDate : String -> String -> String
 formatDate formatter str =
     let
         date =
-            Date.fromString (String.left 10 str)
+            Date.fromString (String.left 16 str)
     in
         case date of
             Ok val ->
