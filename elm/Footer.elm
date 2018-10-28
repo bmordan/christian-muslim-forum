@@ -50,8 +50,10 @@ import Tachyons.Classes
         , dn_ns
         , w_100
         , db
+        , dib
         , mw9
         , mb1
+        , mr2
         , center
         , ph3
         , cf
@@ -208,6 +210,16 @@ address =
         , Html.br [] []
         , Html.a [ href "tel:02078325841", classes [ link, db, white, mb1, tc, tl_ns ] ] [ text "020 7832 5841" ]
         , Html.a [ href "mailto:info@christianmuslimforum.org", classes [ link, db, white, tc, tl_ns ] ] [ text "info@christianmuslimforum.org" ]
+        , Html.br [] []
+        , div [classes [tc, tl_ns]]
+          [
+            Html.a [ href "https://www.facebook.com/groups/christianmuslimforum/", classes [ link, dib, white, mb1, mr2 ] ] [
+                img [src (frontendUrl ++ "/facebook.svg")] []
+            ]
+            , Html.a [ href "https://twitter.com/ChrisMusForum", classes [ link, dib, white, mb1 ] ] [
+                img [src (frontendUrl ++ "/twitter.svg")] []
+            ]
+          ]
         ]
 
 

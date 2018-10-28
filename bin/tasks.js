@@ -37,6 +37,9 @@ module.exports = [
       pageBy(uri: "home") {
             title
             content
+            featuredImage{
+              sourceUrl
+            }
           }
       events(where: {status: FUTURE}){
         edges{
@@ -177,6 +180,7 @@ function formatHome ({pageBy, events, articles, tags}) {
   return {
     title: pageBy.title
     , content: pageBy.content
+    , featuredImage: pageBy.featuredImage
     , events: listEvent(events.edges)
     , articles: listArticle(articles.edges)
     , articlesMore: true
