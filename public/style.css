@@ -62,8 +62,16 @@ main {
   padding-left: 145px;
 }
 
+.header nav a:first-child {
+  display: none;
+}
+
 .footer {
   min-height: 36rem;
+}
+
+#header-nav, #footer-nav {
+  font-size: 0.875rem;
 }
 
 .loading {
@@ -344,6 +352,10 @@ main {
 }
 
 @media screen and (min-width: 30rem) {
+  .header nav a:first-child {
+    display: inline;
+  }
+
   .hero-bg {
     background-size: 100vw auto;
   }

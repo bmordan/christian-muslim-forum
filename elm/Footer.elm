@@ -291,7 +291,7 @@ view model =
             , Html.Attributes.id "footer-nav"
             ]
             [ nav
-                [ classes [ flex_auto, flex, items_center, justify_end, pv2, pr3 ]
+                [ classes [ flex_auto, flex, items_center, justify_end, pv2, pr2 ]
                 ]
                 (List.map createNavItem navItems)
             ]

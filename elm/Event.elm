@@ -410,7 +410,7 @@ viewEvent { title, slug, excerpt, content, date, featuredImage } =
                         , classList [ ( "event-title", True ), ( "bg_trans_yellow", True ) ]
                         ]
                         [ div [ classes [ f2, f1_ns ] ] [ text title ]
-                        , div [ classes [ f4 ] ] [ text (formatDate "%a %d %b" date) ]
+                        , div [ classes [ f4 ] ] [ text (formatDate "%a %d %B - %l:%M %P" date) ]
                         ]
                     , div [] [ viewDate date ]
                     ]
