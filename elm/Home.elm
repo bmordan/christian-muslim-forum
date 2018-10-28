@@ -34,6 +34,7 @@ import Tachyons.Classes
         , pl1
         , pl2
         , ph2
+        , pt5
         , pb2
         , pb4
         , pr2
@@ -104,6 +105,7 @@ init =
             , searchModel = Search.initModel
             , title = ""
             , content = ""
+            , featuredImage = Nothing
             , events = []
             , articles = []
             , articlesMore = True
@@ -132,6 +134,7 @@ type alias Model =
     , searchModel : Search.Model
     , title : String
     , content : String
+    , featuredImage : Maybe FeaturedImage
     , events : List Event
     , articles : List Article
     , articlesMore : Bool
@@ -153,6 +156,7 @@ type alias ArticlesOnlyData =
 type alias Page =
     { title : String
     , content : String
+    , featuredImage : Maybe FeaturedImage
     }
 
 
@@ -254,6 +258,7 @@ decodePage =
     decode Page
         |> required "title" string
         |> required "content" string
+        |> required "featuredImage" (nullable decodeFeaturedImage)
 
 
 decodeArticlesResponse : Decoder ArticlesResponse
@@ -310,6 +315,7 @@ decodeModel =
         |> required "searchModel" Search.decodeModel
         |> required "title" string
         |> required "content" string
+        |> required "featuredImage" (nullable decodeFeaturedImage)
         |> required "events" (Decode.list decodeEvent)
         |> required "articles" (Decode.list decodeArticle)
         |> required "articlesMore" bool
@@ -355,6 +361,10 @@ pageRequest model =
             |> GraphQl.withSelectors
                 [ GraphQl.field "title"
                 , GraphQl.field "content"
+                , GraphQl.field "featuredImage"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "sourceUrl"
+                        ]
                 ]
         , GraphQl.field "events"
             |> GraphQl.withArgument "where"
@@ -521,6 +531,7 @@ update msg model =
                     { model
                         | title = data.pageBy.title
                         , content = data.pageBy.content
+                        , featuredImage = data.pageBy.featuredImage
                         , events = List.map createEvent data.events.edges
                         , articles = List.map createArticle data.articles.edges
                         , articlesMore = data.articles.pageInfo.hasNextPage
@@ -713,12 +724,15 @@ viewArticle { slug, title, excerpt, featuredImage, commentCount, author } =
 
 view : Model -> Html.Html Msg
 view model =
-    div []
+    div [classList [ ( "hero-bg" , True) ]
+    , style [ ("background-image", "url(" ++ (getFeaturedImageSrc model.featuredImage) ++ ")") ]
+    ]
         [ Html.map HeaderMsg (Header.view model.headerModel)
         , div
-            [ classes [ center, mw7, lh_copy, ph3, mt6, pb4 ]
+            [ classes [ ph3, pt5, pb4, relative ]
+            , classList [ ( "hero-content" , True) ]
             ]
-            [ div [ setInnerHtml model.content ] []
+            [ div [ setInnerHtml model.content, classes [center, mw7, lh_copy] ] []
             ]
         , if List.isEmpty model.events then
             div [] []

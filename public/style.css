@@ -6,6 +6,7 @@
   --cmf-yellow: #B6B112;
   --cmf-teal: #9BC4BB;
   --cmf-trans-yellow: rgba(182, 177, 18, 0.9);
+  --cmf-trans-green: rgba(18, 116, 94, 0.9);
 }
 
 html, body {
@@ -147,6 +148,16 @@ main {
   background-position: center center;
 }
 
+.hero-bg {
+  background-size: auto 100vh;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+.hero-content {
+  background-color: rgba(255,255,255,0.9);
+}
+
 .header-img {
   position: absolute;
   width: 160px;
@@ -280,6 +291,7 @@ main {
 }
 
 .event-card-img {
+  align-self: start;
   background-position: center center;
   background-size: cover;
   height: 8.8rem;
@@ -332,6 +344,9 @@ main {
 }
 
 @media screen and (min-width: 30rem) {
+  .hero-bg {
+    background-size: 100vw auto;
+  }
   .footer {
     min-height: 16rem;
   }
@@ -343,7 +358,7 @@ main {
     background-position: center top;
   }
   .modal-box {
-    height: 50vh;
+    height: 49vh;
     width: 40%;
   }
 }
