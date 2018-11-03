@@ -246,13 +246,18 @@ type alias Author =
     , faith : String
     }
 
+type alias SlugWithName = {
+    slug: String
+    , name: String
+}
+
 
 type alias Person =
     { name : String
     , bio : String
     , avatar : String
     , faith : String
-    , tags : List String
+    , tags : List SlugWithName
     }
 
 

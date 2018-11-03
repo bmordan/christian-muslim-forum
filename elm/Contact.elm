@@ -30,6 +30,7 @@ import Tachyons.Classes
         , pr3
         , pl3
         , pb3
+        , pv4
         , br_100
         , db
         , pl2
@@ -374,14 +375,14 @@ viewPage model =
 
 viewPerson : Person -> Html.Html Msg
 viewPerson person =
-    div [ classes [ mb6, mt4 ] ]
+    div [ classes [ pv4 ] ]
         [ div [ classList [ ( "person", True ) ] ]
             [ if person.faith == "christian" then
                 viewChristianPerson person
               else
                 viewMuslimPerson person
             ]
-        , div [ classes [ db, pa3, mw7, mt4, center ], setInnerHtml person.bio ] []
+        , div [ classes [ db, pa3, mw7, center ], setInnerHtml person.bio ] []
         ]
 
 
