@@ -2,7 +2,6 @@ module People exposing (..)
 
 import Html exposing (text, div, node, img, h2)
 import Html.Attributes exposing (href, src, id, content, rel, name, classList, style)
-import Html.Events exposing (onClick)
 import Http exposing (Error)
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, requiredAt, optional)
@@ -120,7 +119,9 @@ type alias SlugNode =
 
 
 type alias Slug =
-    { slug : String }
+    { slug : String
+    , name : String
+    }
 
 
 type alias WordpressPerson =
@@ -150,7 +151,7 @@ type alias Person =
     , bio : String
     , avatar : String
     , faith : String
-    , tags : List String
+    , tags : List Slug
     }
 
 
@@ -204,6 +205,7 @@ decodeSlug : Decoder Slug
 decodeSlug =
     decode Slug
         |> required "slug" string
+        |> required "name" string
 
 
 decodeFeaturedImage : Decoder FeaturedImage
@@ -228,7 +230,7 @@ decodePerson =
         |> required "bio" string
         |> required "avatar" string
         |> required "faith" string
-        |> required "tags" (Decode.list string)
+        |> required "tags" (Decode.list decodeSlug)
 
 
 decodeHeaderModel : Decoder HeaderModel
@@ -273,6 +275,7 @@ pageRequest =
                                                 [ GraphQl.field "node"
                                                     |> GraphQl.withSelectors
                                                         [ GraphQl.field "slug"
+                                                        , GraphQl.field "name"
                                                         ]
                                                 ]
                                         ]
@@ -321,7 +324,7 @@ createPerson { title, content, featuredImage, categories } =
             findFaith categories.edges
 
         tags =
-            List.map (\{ node } -> node.slug) categories.edges
+            List.map (\{ node } -> node) categories.edges
     in
         Person name bio avatar faith tags
 
@@ -334,8 +337,7 @@ createPeopleList { edges } =
 
 withTag : String -> List Person -> List Person
 withTag tag people =
-    List.filter (\person -> (List.any (\t -> t == tag) person.tags)) people
-        |> List.map (\person -> { person | tags = [ tag ] })
+    List.filter (\person -> (List.any (\t -> t.slug == tag) person.tags)) people
 
 
 orderPeopleList : List Person -> List Person
@@ -411,75 +413,6 @@ viewPage model =
             , node "script" [ id "elm-js" ] []
             ]
         ]
-
-
-viewRoleFromTag : List String -> String
-viewRoleFromTag tags =
-    List.head tags
-        |> Maybe.withDefault "contributor"
-        |> slugToTitle
-
-
-viewChristianPerson : Person -> Html.Html Msg
-viewChristianPerson person =
-    div
-        [ classes [ flex, items_center, justify_start, mw7, center ]
-        , classList [ ( "person", True ) ]
-        ]
-        [ div
-            [ classes [ br_100, flex_none, nl4, ml0_ns ]
-            , classList [ ( "avatar", True ) ]
-            , style [ ( "background-image", "url(" ++ person.avatar ++ ")" ) ]
-            ]
-            []
-        , div [ classes [ flex_auto, flex, flex_column, justify_between ] ]
-            [ div
-                [ classes [ f4, pl2, pl3_ns ]
-                , classList [ ( "cmf-blue", True ) ]
-                ]
-                [ text person.name ]
-            , div
-                [ classes [ pl2, pl3_ns ]
-                , classList [ ( "cmf-blue", True ) ]
-                ]
-                [ text (viewRoleFromTag person.tags) ]
-            ]
-        , img [ src (frontendUrl ++ "/" ++ (String.toLower person.faith) ++ ".svg"), classes [ flex_none, pr3 ], classList [ ( "icon", True ) ] ] []
-        ]
-
-
-viewMuslimPerson : Person -> Html.Html Msg
-viewMuslimPerson person =
-    div
-        [ classes [ flex, items_center, justify_start, mw7, center ]
-        , classList [ ( "person", True ) ]
-        ]
-        [ img
-            [ src (frontendUrl ++ "/" ++ (String.toLower person.faith) ++ ".svg")
-            , classes [ flex_none, pl3 ]
-            , classList [ ( "icon", True ) ]
-            ]
-            []
-        , div [ classes [ flex_auto ] ]
-            [ div
-                [ classes [ f4, pr2, pr3_ns, tr ]
-                , classList [ ( "cmf-blue", True ) ]
-                ]
-                [ text person.name ]
-            , div
-                [ classes [ pr2, pr3_ns, tr ]
-                , classList [ ( "cmf-blue", True ) ]
-                ]
-                [ text (viewRoleFromTag person.tags) ]
-            ]
-        , div
-            [ classes [ br_100, flex_none, nr4, mr0_ns ]
-            , classList [ ( "avatar", True ) ]
-            , style [ ( "background-image", "url(" ++ person.avatar ++ ")" ) ]
-            ]
-            []
-        ]
-
 
 view : Model -> Html.Html Msg
 view model =

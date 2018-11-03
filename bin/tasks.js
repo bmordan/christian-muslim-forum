@@ -12,12 +12,11 @@ const {
   , pick
   , prop
   , path
-  , props
+  , tap
   , reduce
   , append
   , contains
   , filter
-  , tap
   , map
   , head
   , assoc
@@ -168,6 +167,7 @@ module.exports = [
               edges{
                 node{
                   slug
+                  name
                 }
               }
             }
@@ -231,7 +231,7 @@ function formatPerson (people, {node}) {
     bio: content,
     avatar: prop('sourceUrl', featuredImage),
     faith: getFaith(categories),
-    tags: arrayOfTags(categories)
+    tags: []
   }
   return append(person, people)
 }

@@ -8,7 +8,6 @@ import Json.Encode as Encode
 import Json.Decode as Decode
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Regex exposing (replace)
 import Date
 import Date.Format as Format
 import Tachyons exposing (..)
@@ -25,6 +24,7 @@ import Tachyons.Classes
         , pr2
         , pl2
         , pr3
+        , pv4
         , pr3_ns
         , pl3_ns
         , tr
@@ -54,7 +54,7 @@ type alias Person =
     , bio : String
     , avatar : String
     , faith : String
-    , tags : List String
+    , tags : List Slug
     }
 
 
@@ -69,6 +69,10 @@ type alias OpenGraphTags =
     , url : String
     }
 
+type alias Slug =
+    { slug : String
+    , name : String
+    }
 
 setInnerHtml : String -> Html.Attribute msg
 setInnerHtml str =
@@ -182,16 +186,18 @@ head { title, description, image, url } =
         ]
 
 
-viewRoleFromTag : List String -> String
+viewRoleFromTag : List Slug -> String
 viewRoleFromTag tags =
-    List.head tags
-        |> Maybe.withDefault "contributor"
-        |> slugToTitle
+    List.filter(\({slug}) -> slug /= "christian") tags
+        |> List.filter(\({slug}) -> slug /= "muslim")
+        |> List.head
+        |> Maybe.withDefault { slug = "contributor", name = "Contributor" }
+        |> .name
 
 
 viewPerson : Bool -> Person -> Html.Html msg
 viewPerson withBio person =
-    div [ classes [ mt4 ] ]
+    div [ classes [ pv4 ] ]
         [ div [ classList [ ( "person", True ) ] ]
             [ if (String.toLower person.faith) == "christian" then
                 viewChristianPerson withBio person
@@ -202,7 +208,7 @@ viewPerson withBio person =
             div [] []
           else
             div
-                [ classes [ db, pa3, mw7, mt4, mb6, center ]
+                [ classes [ db, pa3, mw7, mt4, center ]
                 , setInnerHtml person.bio
                 ]
                 []
