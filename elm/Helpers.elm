@@ -282,7 +282,10 @@ formatDate : String -> String -> String
 formatDate formatter str =
     let
         date =
-            Date.fromString (String.left 16 str)
+        String.left 19 str
+        |> String.split " "
+        |> String.join "T"
+        |> Date.fromString
     in
         case date of
             Ok val ->
@@ -322,6 +325,22 @@ createNavItem item =
             ]
             [ Html.text (capitalise item)
             ]
+
+monthToWord : Date.Date -> String
+monthToWord date =
+  case (Date.month date) of
+    Date.Jan -> "Jan"
+    Date.Feb -> "Feb"
+    Date.Mar -> "Mar"
+    Date.Apr -> "Apr"
+    Date.May -> "May"
+    Date.Jun -> "Jun"
+    Date.Jul -> "Jul"
+    Date.Aug -> "Aug"
+    Date.Sep -> "Sep"
+    Date.Oct -> "Oct"
+    Date.Nov -> "Nov"
+    Date.Dec -> "Dec"
 
 
 monthToInt : Date.Month -> Int
