@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="204px" height="204px" viewBox="0 0 204 204" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>phone-menu</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Style-Guide" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="phone-menu" transform="translate(2.000000, 2.000000)">
+            <circle id="Oval-2" stroke="#12745E" stroke-width="3" fill="#FFFFFF" cx="100" cy="100" r="100"></circle>
+            <circle id="Oval-3" fill="#12745E" cx="59.5" cy="107.5" r="7.5"></circle>
+            <circle id="Oval-3-Copy" fill="#12745E" cx="59.5" cy="131.5" r="7.5"></circle>
+            <circle id="Oval-3-Copy-2" fill="#12745E" cx="59.5" cy="154.5" r="7.5"></circle>
+        </g>
+    </g>
+</svg>

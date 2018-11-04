@@ -13,4 +13,4 @@ graphqlEndpoint =
 
 frontendUrl : String
 frontendUrl =
-    "http://christianmuslimforum.net"
+    "http://localhost:3030"

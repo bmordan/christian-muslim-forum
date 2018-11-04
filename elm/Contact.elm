@@ -131,7 +131,7 @@ type alias WordpressPerson =
 
 
 type alias HeaderModel =
-    { scrollLeft : Bool
+    { showMenu : Bool
     }
 
 
@@ -231,7 +231,7 @@ decodePerson =
 decodeHeaderModel : Decoder HeaderModel
 decodeHeaderModel =
     decode HeaderModel
-        |> required "scrollLeft" bool
+        |> required "showMenu" bool
 
 
 decodeFooterModel : Decoder FooterModel

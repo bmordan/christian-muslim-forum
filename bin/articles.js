@@ -102,7 +102,7 @@ const configArticleCreateFolder = ({node}) => {
     next: null,
     slug,
     comments: [],
-    headerModel: {scrollLeft: false},
+    headerModel: {showMenu: false},
     footerModel: {modal: false, fname: "", lname: "", email: "", message: ""},
     searchModel: {term: "", currentTerm: "", tags: [], results: []}
   }

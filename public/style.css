@@ -62,7 +62,21 @@ main {
   padding-left: 145px;
 }
 
-.header nav a:first-child {
+.nav-sm {
+  height: 2rem;
+  top: 0;
+  right: 0;
+}
+
+.nav-sm img {
+  position: fixed;
+  width: 100px;
+  height: 100px;
+  top: -2.5rem;
+  right: -3rem;
+}
+
+.nav-lg {
   display: none;
 }
 
@@ -371,6 +385,15 @@ main {
   }
   .modal-box {
     width: 40%;
+  }
+}
+
+@media screen and (min-width: 30rem) {
+  .nav-sm {
+    display: none;
+  }
+  .nav-lg {
+    display: inline-flex;
   }
 }
 
