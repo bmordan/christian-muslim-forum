@@ -30,6 +30,10 @@ main {
   color: var(--cmf-teal) !important;
 }
 
+.cmf-green {
+  color: var(--cmf-green) !important;
+}
+
 .cmf-white {
   color: var(--cmf-white) !important;
 }
@@ -54,6 +58,10 @@ main {
   background-color: var(--cmf-trans-yellow) !important;
 }
 
+.b__cmf_green {
+  border-color: var(--cmf-green);
+}
+
 .feature-font {
   font-family: 'Libre Baskerville', serif;
 }
@@ -62,7 +70,29 @@ main {
   padding-left: 145px;
 }
 
-.header nav a:first-child {
+.nav-sm {
+  min-height: 2rem;
+  top: 0;
+  right: 0;
+}
+
+.nav-sm img {
+  position: fixed;
+  width: 100px;
+  height: 100px;
+  top: -2.5rem;
+  right: -3rem;
+}
+
+.nav-sm nav {
+  position: fixed;
+  top: 2rem;
+  left: 0;
+  right: 0;
+  padding-left: 0 !important;
+}
+
+.nav-lg {
   display: none;
 }
 
@@ -371,6 +401,15 @@ main {
   }
   .modal-box {
     width: 40%;
+  }
+}
+
+@media screen and (min-width: 30rem) {
+  .nav-sm {
+    display: none;
+  }
+  .nav-lg {
+    display: inline-flex;
   }
 }
 

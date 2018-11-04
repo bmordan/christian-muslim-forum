@@ -4,12 +4,8 @@ import Html exposing (nav, a, text, div, img, nav)
 import Html.Attributes exposing (href, src, style, classList, id)
 import Html.Events exposing (onClick)
 import Config exposing (frontendUrl)
-import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required)
-import Dom exposing (Error)
-import Dom.Scroll exposing (toLeft, toRight)
-import Task
 import Helpers exposing (chev, navItems, capitalise, createNavItem)
 import Tachyons exposing (..)
 import Tachyons.Classes
@@ -26,24 +22,33 @@ import Tachyons.Classes
         , pv2
         , pr2
         , pa2
+        , pv4
+        , bb
+        , db
         , white
+        , bg_white
         , overflow_x_scroll
         , link
         , dn_ns
+        , dn_m
+        , dn_l
+        , db_ns
         , fr_ns
         , w_100
         , z_2
+        , z_3
         , top_0
+        , tc
         )
 
 
 type Msg
-    = Scroll
+    = Show
     | Noop
 
 
 type alias Model =
-    { scrollLeft : Bool
+    { showMenu: Bool
     }
 
 
@@ -55,47 +60,28 @@ initModel =
 decodeModel : Decoder Model
 decodeModel =
     decode Model
-        |> required "scrollLeft" bool
-
-
-scrollToLeft : Cmd Msg
-scrollToLeft =
-    Task.attempt (always Noop) <| toLeft "header-nav"
-
-
-scrollToRight : Cmd Msg
-scrollToRight =
-    Task.attempt (always Noop) <| toRight "header-nav"
+        |> required "showMenu" bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Scroll ->
-            let
-                cmd =
-                    if model.scrollLeft then
-                        scrollToLeft
-                    else
-                        scrollToRight
-            in
-                ( { model | scrollLeft = not model.scrollLeft }, cmd )
-
+        Show -> 
+            ( { model | showMenu = not model.showMenu }, Cmd.none )
         Noop ->
             ( model, Cmd.none )
 
-
-flipChev : Model -> Html.Attribute msg
-flipChev model =
-    let
-        deg =
-            if model.scrollLeft then
-                "0"
-            else
-                "180"
-    in
-        Html.Attributes.style [ ( "transform", "rotate(" ++ deg ++ "deg)" ) ]
-
+viewSmNavItem : String -> Html.Html Msg
+viewSmNavItem navItem =
+  let hrefurl =
+    if navItem == "home" then (frontendUrl ++ "/")
+    else (frontendUrl ++ "/" ++ navItem)
+  in
+    a [href hrefurl
+    , classes [w_100, bg_white, tc, pv4, bb, db]
+    , classList [("b__cmf_green", True), ("cmf-green", True)]] [
+        text (capitalise navItem)
+    ]
 
 view : Model -> Html.Html Msg
 view model =
@@ -103,7 +89,7 @@ view model =
         [ classes [ fixed, z_2, w_100, flex, items_start, justify_end, top_0 ]
         , classList [ ( "bg_cmf_islamic", True ), ( "header", True ) ]
         ]
-        [ Html.a [ href "/" ]
+        [ Html.a [ href "/", classes [z_3] ]
             [ img
                 [ src (frontendUrl ++ "/cmf-circle-logo.png")
                 , classList [ ( "header-img", True ) ]
@@ -118,7 +104,23 @@ view model =
             ]
             [ nav
                 [ classes [ flex, items_center, justify_end, fr_ns, pv2 ]
+                , classList [("nav-lg", True)]
                 ]
                 (List.map createNavItem navItems)
+            , nav
+                [ classes [ white ]
+                , classList [("nav-sm", True)]
+                ]
+                [img [src (frontendUrl ++ "/menu.svg")
+                , onClick (Show)
+                , classes [z_3]] []
+                , ( if model.showMenu then
+                        nav [ classes [z_2]
+                        ] (List.map viewSmNavItem navItems)
+                    else
+                        nav [] []
+                )
+                ]
             ]
+        
         ]
