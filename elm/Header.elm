@@ -22,7 +22,11 @@ import Tachyons.Classes
         , pv2
         , pr2
         , pa2
+        , pv4
+        , bb
+        , db
         , white
+        , bg_white
         , overflow_x_scroll
         , link
         , dn_ns
@@ -32,7 +36,9 @@ import Tachyons.Classes
         , fr_ns
         , w_100
         , z_2
+        , z_3
         , top_0
+        , tc
         )
 
 
@@ -65,12 +71,17 @@ update msg model =
         Noop ->
             ( model, Cmd.none )
 
-viewMenu : Bool -> Html.Html Msg
-viewMenu show =
-  if show then
-    div [] [text "show"]
-  else
-    div [] []
+viewSmNavItem : String -> Html.Html Msg
+viewSmNavItem navItem =
+  let hrefurl =
+    if navItem == "home" then (frontendUrl ++ "/")
+    else (frontendUrl ++ "/" ++ navItem)
+  in
+    a [href hrefurl
+    , classes [w_100, bg_white, tc, pv4, bb, db]
+    , classList [("b__cmf_green", True), ("cmf-green", True)]] [
+        text (capitalise navItem)
+    ]
 
 view : Model -> Html.Html Msg
 view model =
@@ -78,7 +89,7 @@ view model =
         [ classes [ fixed, z_2, w_100, flex, items_start, justify_end, top_0 ]
         , classList [ ( "bg_cmf_islamic", True ), ( "header", True ) ]
         ]
-        [ Html.a [ href "/" ]
+        [ Html.a [ href "/", classes [z_3] ]
             [ img
                 [ src (frontendUrl ++ "/cmf-circle-logo.png")
                 , classList [ ( "header-img", True ) ]
@@ -100,8 +111,15 @@ view model =
                 [ classes [ white ]
                 , classList [("nav-sm", True)]
                 ]
-                [img [src (frontendUrl ++ "/menu.svg"), onClick (Show)] []
-                , (viewMenu model.showMenu)
+                [img [src (frontendUrl ++ "/menu.svg")
+                , onClick (Show)
+                , classes [z_3]] []
+                , ( if model.showMenu then
+                        nav [ classes [z_2]
+                        ] (List.map viewSmNavItem navItems)
+                    else
+                        nav [] []
+                )
                 ]
             ]
         

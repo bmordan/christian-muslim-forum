@@ -30,6 +30,10 @@ main {
   color: var(--cmf-teal) !important;
 }
 
+.cmf-green {
+  color: var(--cmf-green) !important;
+}
+
 .cmf-white {
   color: var(--cmf-white) !important;
 }
@@ -54,6 +58,10 @@ main {
   background-color: var(--cmf-trans-yellow) !important;
 }
 
+.b__cmf_green {
+  border-color: var(--cmf-green);
+}
+
 .feature-font {
   font-family: 'Libre Baskerville', serif;
 }
@@ -63,7 +71,7 @@ main {
 }
 
 .nav-sm {
-  height: 2rem;
+  min-height: 2rem;
   top: 0;
   right: 0;
 }
@@ -74,6 +82,14 @@ main {
   height: 100px;
   top: -2.5rem;
   right: -3rem;
+}
+
+.nav-sm nav {
+  position: fixed;
+  top: 2rem;
+  left: 0;
+  right: 0;
+  padding-left: 0 !important;
 }
 
 .nav-lg {
