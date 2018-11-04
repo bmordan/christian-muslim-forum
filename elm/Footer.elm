@@ -213,7 +213,7 @@ address =
         , Html.br [] []
         , div [classes [tc, tl_ns]]
           [
-            Html.a [ href "https://www.facebook.com/groups/christianmuslimforum/", classes [ link, dib, white, mb1, mr2 ] ] [
+            Html.a [ href "https://www.facebook.com/ChrisMusForum", classes [ link, dib, white, mb1, mr2 ] ] [
                 img [src (frontendUrl ++ "/facebook.svg")] []
             ]
             , Html.a [ href "https://twitter.com/ChrisMusForum", classes [ link, dib, white, mb1 ] ] [
@@ -292,7 +292,7 @@ view model =
             , Html.Attributes.id "footer-nav"
             ]
             [ nav
-                [ classes [ flex_auto, flex, items_center, justify_end, pv2, pr2 ]
+                [ classes [ flex_auto, flex, items_center, justify_end, pv2, pr2, pr3_ns ]
                 ]
                 (List.map createNavItem navItems)
             ]

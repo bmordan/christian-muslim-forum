@@ -100,10 +100,6 @@ main {
   min-height: 36rem;
 }
 
-#header-nav, #footer-nav {
-  font-size: 0.875rem;
-}
-
 .loading {
   min-height: 80vh;
   -webkit-box; display: -ms-flexbox; display: flex;
@@ -193,7 +189,7 @@ main {
 }
 
 .hero-content {
-  background-color: rgba(255,255,255,0.9);
+  background-color: rgba(255,255,255,0.85);
 }
 
 .header-img {

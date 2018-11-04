@@ -21,6 +21,7 @@ import Tachyons.Classes
         , pl2
         , pv2
         , pr2
+        , pr3_ns
         , pa2
         , pv4
         , bb
@@ -103,7 +104,7 @@ view model =
             , Html.Attributes.id "header-nav"
             ]
             [ nav
-                [ classes [ flex, items_center, justify_end, fr_ns, pv2 ]
+                [ classes [ flex, items_center, justify_end, fr_ns, pv2, pr2, pr3_ns ]
                 , classList [("nav-lg", True)]
                 ]
                 (List.map createNavItem navItems)
