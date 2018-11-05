@@ -1,13 +1,10 @@
 module Article exposing (..)
 
-import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
 import Json.Decode.Pipeline exposing (decode, required, optional, requiredAt)
 import Http exposing (Error)
 import Html exposing (text, div, button, a, strong, img, span, p, node)
 import Html.Attributes exposing (href, src, style, id, content, rel, name, classList)
-import Html.Events exposing (onClick)
-import Dom exposing (Error)
 import Dom.Scroll exposing (toTop)
 import Task
 import Navigation
@@ -214,6 +211,7 @@ type alias Tag =
 
 type alias Post =
     { slug : String
+    , postId: Int
     , title : String
     , excerpt : String
     , content : String
@@ -353,6 +351,7 @@ decodePost : Decoder Post
 decodePost =
     decode Post
         |> required "slug" string
+        |> required "postId" int
         |> required "title" string
         |> required "excerpt" string
         |> required "content" string
@@ -478,6 +477,7 @@ postQuery slug =
             |> GraphQl.withArgument "slug" (GraphQl.string slug)
             |> GraphQl.withSelectors
                 [ GraphQl.field "slug"
+                , GraphQl.field "postId"
                 , GraphQl.field "title"
                 , GraphQl.field "excerpt"
                 , GraphQl.field "content"
@@ -560,12 +560,12 @@ stringifyTags tags =
         |> Regex.replace Regex.All (Regex.regex "\"") (\_ -> "'")
 
 
-relatedPostsQuery : List String -> Operation Query Variables
-relatedPostsQuery tags =
+relatedPostsQuery : List String -> Int -> Operation Query Variables
+relatedPostsQuery tags postId =
     GraphQl.named "relatedPostsQuery"
         [ GraphQl.field "posts"
             |> GraphQl.withArgument "first" (GraphQl.int 4)
-            |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "tagSlugIn", (GraphQl.type_ (toString tags)) ) ])
+            |> GraphQl.withArgument "where" (GraphQl.queryArgs [ ( "tagSlugIn", (GraphQl.type_ (toString tags)) ), ( "notIn", (GraphQl.int postId) ) ])
             |> GraphQl.withSelectors
                 [ GraphQl.field "edges"
                     |> GraphQl.withSelectors
@@ -607,9 +607,9 @@ baseRelatedPostsRequest =
     GraphQl.query graphqlEndpoint
 
 
-relatedPostsRequest : List String -> Cmd Msg
-relatedPostsRequest tags =
-    baseRelatedPostsRequest (relatedPostsQuery tags) decodeRelatedPostsData
+relatedPostsRequest : List String -> Int -> Cmd Msg
+relatedPostsRequest tags postId =
+    baseRelatedPostsRequest (relatedPostsQuery tags postId) decodeRelatedPostsData
         |> GraphQl.send GotRelatedPosts
 
 
@@ -724,18 +724,18 @@ update msg model =
                 , post = Just postdata.postBy
                 , comments = postdata.postBy.comments.edges
               }
-            , relatedPostsRequest (createQueryTagString postdata.postBy.tags)
+            , relatedPostsRequest (createQueryTagString postdata.postBy.tags) postdata.postBy.postId
             )
 
         GotPost (Err err) ->
             ( model, Cmd.none )
 
-        GotRelatedPosts (Ok relatedposts) ->
+        GotRelatedPosts (Ok relatedposts) ->            
             ( { model
                 | related = (List.map createRelatedPost relatedposts.posts.edges)
                 , prev = maybeLink model subtract1
                 , next = maybeLink model add1
-              }
+            }
             , scrollToTop
             )
 

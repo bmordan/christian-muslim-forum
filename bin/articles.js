@@ -22,6 +22,7 @@ const query = cursor => `{
     edges {
       node {
         title
+        postId
         slug
         excerpt
         featuredImage {
@@ -65,6 +66,7 @@ const configArticleCreateFolder = ({node}) => {
 
   const article = {
     slug,
+    postId: 0,
     title,
     excerpt: stripExcerpt(excerpt),
     content: "",
