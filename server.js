@@ -1,4 +1,4 @@
-require('dotenv').config()
+// require('dotenv').config()
 const express = require('express')
 const app = express()
 const async = require('async')
@@ -77,4 +77,4 @@ app.get('/api/empty-queue', (req, res) => {
   return res.send({queue: queue.length()})
 })
 
-app.listen(process.env.BUILD_SERVER_PORT, () => console.log(`build server running on ${process.env.BUILD_SERVER_PORT}`))
+app.listen(3030, () => console.log(`build server running on 3030`))
