@@ -5,6 +5,7 @@ const fs = require('fs')
 const { exec } = require('child_process')
 const { elmStaticHtml } = require('elm-static-html-lib')
 const { pipe, assoc, tap, apply, contains } = require('ramda')
+const addGoogleAnalytics = require('./gtag')
 const elmRoot = path.join(__dirname, '..')
 const distRoot = path.join(__dirname, '..', 'dist')
 
@@ -24,7 +25,8 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}, don
 
   const writeFile = (generatedHtml) => {
     let elmJsContent = `Elm.${moduleName}.embed(document.getElementById("elm-root"))`
-    const html = generatedHtml.replace(`<script id="elm-js">`, `<script id="elm-js">${elmJsContent}`)
+    let html = generatedHtml.replace(`<script id="elm-js">`, `<script id="elm-js">${elmJsContent}`)
+    html = addGoogleAnalytics(html)
 
     return new Promise(function (resolve, reject) {
       fs.writeFile(distPath, html, "utf8", (err) => {

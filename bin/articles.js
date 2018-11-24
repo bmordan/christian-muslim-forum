@@ -7,6 +7,7 @@ const fs = require('fs')
 const he = require('he')
 const { exec } = require('child_process')
 const { multiple, elmStaticHtml } = require('elm-static-html-lib')
+const addGoogleAnalytics = require('./gtag')
 const { map, pipe, join, tap, prop, replace } = require('ramda')
 const elmRoot = path.join(__dirname, '..')
 const distRoot = path.join(__dirname, '..', 'dist')
@@ -129,7 +130,8 @@ const renderArticlesToHtml = ({posts}) => {
 const writeFile = (generatedHtmls, resolve, reject) => {
   if (!generatedHtmls.length) return resolve()
 
-  const { generatedHtml, fileOutputName } = generatedHtmls.pop()
+  let { generatedHtml, fileOutputName } = generatedHtmls.pop()
+  generatedHtml = addGoogleAnalytics(generatedHtml)
 
   fs.writeFile(path.join(__dirname, '..', 'dist', 'articles', fileOutputName, 'index.html'), generatedHtml, (err) => {
     if (err) return reject(err)

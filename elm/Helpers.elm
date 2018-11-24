@@ -1,7 +1,7 @@
 module Helpers exposing (..)
 
-import Html exposing (text, div, img)
-import Html.Attributes exposing (href, src, id, content, property, rel, name, classList, style, httpEquiv, size)
+import Html exposing (text, div, img, text)
+import Html.Attributes exposing (href, src, id, content, property, rel, name, classList, style, httpEquiv, size, async)
 import Html.Events exposing (keyCode, on)
 import Config exposing (frontendUrl)
 import Json.Encode as Encode
@@ -152,7 +152,9 @@ head : OpenGraphTags -> Html.Html msg
 head { title, description, image, url } =
     node "head"
         []
-        [ node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
+        [ node "script" [ async True, src "https://www.googletagmanager.com/gtag/js?id=UA-101196212-1"] []
+        , node "script" [ Html.Attributes.id "gtag"] []
+        , node "link" [ href "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css", rel "stylesheet" ] []
         , node "link" [ href "/style.css", rel "stylesheet" ] []
         , node "meta" [ Html.Attributes.name "viewport", content "width=device-width, initial-scale=1.0" ] []
         , node "meta" [ httpEquiv "Content-Security-Policy", content "default-src 'self'; font-src 'self' data: fonts.gstatic.com;" ] []
