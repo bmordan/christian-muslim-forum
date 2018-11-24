@@ -1,10 +1,10 @@
-// require('dotenv').config()
 const express = require('express')
 const app = express()
 const async = require('async')
 const bodyParser = require('body-parser')
 const path = require('path')
 const request = require('request-promise')
+const graphql = require('graphql-request').request
 const build = require('./bin/main')
 const mailChimpBaseUrl = "https://us11.api.mailchimp.com/3.0"
 const mailChimpListUrl = `/lists/${process.env.MAILCHIMP_LIST}/members/`
@@ -61,6 +61,14 @@ app.post('/subscribe', (req, res) => {
       return res.send(mailchimp_err)
     })
   })
+})
+
+app.post('/graphql', (req, res) => {
+  graphql('http://46.101.6.182/graphql', req.body.query)
+  .then(data => {
+    return res.json(data)
+  })
+  .catch(err => res.send(err));
 })
 
 app.get('/api/build', (req, res) => {
