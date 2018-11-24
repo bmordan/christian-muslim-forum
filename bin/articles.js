@@ -1,6 +1,6 @@
 const {URL} = require('url')
 const baseUrl = "http://46.101.6.182/graphql"
-const location = new URL("https://christianmuslimforum.org")
+const location = new URL("http://christianmuslimforum.org")
 const request = require('graphql-request').request
 const path = require('path')
 const fs = require('fs')

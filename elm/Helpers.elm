@@ -1,6 +1,6 @@
 module Helpers exposing (..)
 
-import Html exposing (text, div, img, text)
+import Html exposing (text, div, img)
 import Html.Attributes exposing (href, src, id, content, property, rel, name, classList, style, httpEquiv, size, async)
 import Html.Events exposing (keyCode, on)
 import Config exposing (frontendUrl)
