@@ -62,6 +62,7 @@ import Tachyons.Classes
         , w_50_ns
         , fr_ns
         , mt2
+        , mh2
         , tc
         , tr
         , tl_ns
@@ -213,11 +214,14 @@ address =
         , Html.br [] []
         , div [classes [tc, tl_ns]]
           [
-            Html.a [ href "https://www.facebook.com/ChrisMusForum", classes [ link, dib, white, mb1, mr2 ] ] [
+            Html.a [ href "https://www.facebook.com/ChrisMusForum", classes [ link, dib, white, mb1 ] ] [
                 img [src (frontendUrl ++ "/facebook.svg")] []
             ]
-            , Html.a [ href "https://twitter.com/ChrisMusForum", classes [ link, dib, white, mb1 ] ] [
+            , Html.a [ href "https://twitter.com/ChrisMusForum", classes [ link, dib, white, mb1, mh2 ] ] [
                 img [src (frontendUrl ++ "/twitter.svg")] []
+            ]
+            , Html.a [ href "https://www.instagram.com/chrismusforum/", classes [ link, dib, white, mb1 ] ] [
+                img [src (frontendUrl ++ "/instagram.svg")] []
             ]
           ]
         ]
