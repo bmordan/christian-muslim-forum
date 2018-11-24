@@ -1,5 +1,5 @@
 const {URL} = require('url')
-const location = new URL("http://christianmuslimforum.org")
+const location = new URL("https://christianmuslimforum.org")
 const nodepath = require('path')
 
 // this mocks the document.location object for server side rendering of Article page
