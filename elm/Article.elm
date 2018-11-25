@@ -105,7 +105,6 @@ initModel location =
     , slug = maybeSlug location
     , comments = []
     , headerModel = Header.initModel
-    , footerModel = Footer.initModel
     , searchModel = Search.initModel
     }
 
@@ -122,7 +121,6 @@ type Msg
     | GotRelatedPosts (Result Http.Error RelatedPostsData)
     | Scroll
     | HeaderMsg Header.Msg
-    | FooterMsg Footer.Msg
     | SearchMsg Search.Msg
 
 
@@ -268,17 +266,12 @@ type alias Model =
     , slug : Maybe String
     , comments : List Node
     , headerModel : Header.Model
-    , footerModel : Footer.Model
     , searchModel : Search.Model
     }
 
 
 type alias HeaderModel =
     Header.Model
-
-
-type alias FooterModel =
-    Footer.Model
 
 
 type alias SearchModel =
@@ -427,7 +420,6 @@ decodeModel =
         |> required "slug" (nullable string)
         |> required "comments" (Decode.list decodeNode)
         |> required "headerModel" Header.decodeModel
-        |> required "footerModel" Footer.decodeModel
         |> required "searchModel" Search.decodeModel
 
 
@@ -759,13 +751,6 @@ update msg model =
             in
                 ( { model | searchModel = updatedSearchModel }, Cmd.map SearchMsg searchCmd )
 
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
-
 
 createPerson : Author -> Person
 createPerson { name, bio, avatar, faith } =
@@ -998,6 +983,6 @@ view model =
             , viewRelatedPosts model
             , viewSearch model
             ]
-        , Html.map FooterMsg (Footer.view model.footerModel)
+        , Footer.view
         , node "script" [ src "http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5a59d97a9c28847a" ] []
         ]

@@ -61,7 +61,6 @@ init =
     let
         model =
             { headerModel = Header.initModel
-            , footerModel = Footer.initModel
             , content = ""
             , people = []
             }
@@ -72,12 +71,10 @@ init =
 type Msg
     = GotContent (Result Error Data)
     | HeaderMsg Header.Msg
-    | FooterMsg Footer.Msg
 
 
 type alias Model =
     { headerModel : Header.Model
-    , footerModel : Footer.Model
     , content : String
     , people : List Person
     }
@@ -136,14 +133,6 @@ type alias HeaderModel =
     { showMenu : Bool
     }
 
-
-type alias FooterModel =
-    { modal : Bool
-    , fname : String
-    , lname : String
-    , email : String
-    , message : String
-    }
 
 
 type alias Person =
@@ -218,7 +207,6 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" decodeHeaderModel
-        |> required "footerModel" decodeFooterModel
         |> required "content" string
         |> required "people" (Decode.list decodePerson)
 
@@ -238,15 +226,6 @@ decodeHeaderModel =
     decode HeaderModel
         |> required "showMenu" bool
 
-
-decodeFooterModel : Decoder FooterModel
-decodeFooterModel =
-    decode FooterModel
-        |> required "modal" bool
-        |> required "fname" string
-        |> required "lname" string
-        |> required "email" string
-        |> required "message" string
 
 
 pageRequest : Operation Query Variables
@@ -388,12 +367,6 @@ update msg model =
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
 
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
 
 openGraphTags : OpenGraphTags
@@ -426,5 +399,5 @@ view model =
               else
                 div [] (List.map (viewPerson False) model.people)
             ]
-        , Html.map FooterMsg (Footer.view model.footerModel)
+        , Footer.view
         ]

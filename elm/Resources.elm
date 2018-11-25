@@ -37,7 +37,6 @@ init =
     let
         model =
             { headerModel = Header.initModel
-            , footerModel = Footer.initModel
             , content = ""
             }
     in
@@ -47,12 +46,10 @@ init =
 type Msg
     = GotContent (Result Error Data)
     | HeaderMsg Header.Msg
-    | FooterMsg Footer.Msg
 
 
 type alias Model =
     { headerModel : Header.Model
-    , footerModel : Footer.Model
     , content : String
     }
 
@@ -69,9 +66,6 @@ type alias Page =
 type alias HeaderModel =
     Header.Model
 
-
-type alias FooterModel =
-    Footer.Model
 
 
 decodeData : Decoder Data
@@ -90,7 +84,6 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" Header.decodeModel
-        |> required "footerModel" Footer.decodeModel
         |> required "content" string
 
 
@@ -134,13 +127,6 @@ update msg model =
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
 
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
-
 
 openGraphTags : OpenGraphTags
 openGraphTags =
@@ -173,5 +159,5 @@ view model =
                 , classes [ ph3, pb3, center, mw7, lh_copy ]
                 ]
                 []
-        , Html.map FooterMsg (Footer.view model.footerModel)
+        , Footer.view
         ]
