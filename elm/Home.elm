@@ -34,6 +34,7 @@ import Tachyons.Classes
         , pl1
         , pl2
         , ph2
+        , pt4
         , pt5
         , pb2
         , pb4
@@ -83,6 +84,7 @@ import Tachyons.Classes
         , db_ns
         , dn_m
         , near_black
+        , self_start
         )
 
 
@@ -106,6 +108,7 @@ init =
             , content = ""
             , featuredImage = Nothing
             , events = []
+            , eventsNext = "null"
             , articles = []
             , articlesMore = True
             , articlesNext = "null"
@@ -123,6 +126,8 @@ type Msg
     | SearchMsg Search.Msg
     | GetArticles String
     | GotArticles (Result Error ArticlesOnlyData)
+    | GetEvents String
+    | GotEvents (Result Error EventsOnlyData)
     | GotDate Date.Date
 
 
@@ -133,6 +138,7 @@ type alias Model =
     , content : String
     , featuredImage : Maybe FeaturedImage
     , events : List Event
+    , eventsNext : String
     , articles : List Article
     , articlesMore : Bool
     , articlesNext : String
@@ -149,6 +155,9 @@ type alias Data =
 type alias ArticlesOnlyData =
     { articles : ArticlesResponse }
 
+type alias EventsOnlyData =
+    { events : EventsEdges }
+
 
 type alias Page =
     { title : String
@@ -158,7 +167,8 @@ type alias Page =
 
 
 type alias EventsEdges =
-    { edges : List EventNode
+    { pageInfo : EventsPageInfo
+    , edges : List EventNode
     }
 
 
@@ -187,6 +197,10 @@ type alias ArticlesResponse =
 
 type alias ArticlesEdges =
     { edges : List ArticleNode
+    }
+
+type alias EventsPageInfo =
+    { startCursor : String
     }
 
 
@@ -245,6 +259,11 @@ decodeArticlesOnlyData =
     decode ArticlesOnlyData
         |> required "articles" decodeArticlesResponse
 
+decodeEventsOnlyData : Decoder EventsOnlyData
+decodeEventsOnlyData =
+    decode EventsOnlyData
+        |> required "events" decodeEventsEdges
+
 
 decodePage : Decoder Page
 decodePage =
@@ -266,6 +285,11 @@ decodePageInfo =
     decode ArticlesPageInfo
         |> required "hasNextPage" bool
         |> required "endCursor" string
+
+decodeEventsPageInfo : Decoder EventsPageInfo
+decodeEventsPageInfo =
+    decode EventsPageInfo
+        |> required "startCursor" string
 
 
 decodeArticleNode : Decoder ArticleNode
@@ -309,6 +333,7 @@ decodeModel =
         |> required "content" string
         |> required "featuredImage" (nullable decodeFeaturedImage)
         |> required "events" (Decode.list decodeEvent)
+        |> required "eventsNext" string
         |> required "articles" (Decode.list decodeArticle)
         |> required "articlesMore" bool
         |> required "articlesNext" string
@@ -320,6 +345,7 @@ decodeModel =
 decodeEventsEdges : Decoder EventsEdges
 decodeEventsEdges =
     decode EventsEdges
+        |> required "pageInfo" decodeEventsPageInfo
         |> required "edges" (Decode.list decodeEventNode)
 
 
@@ -359,6 +385,8 @@ pageRequest model =
                         ]
                 ]
         , GraphQl.field "events"
+            |> GraphQl.withArgument "first" (GraphQl.int 1)
+            |> GraphQl.withArgument "after" (GraphQl.string "null")
             |> GraphQl.withArgument "where"
                 (GraphQl.queryArgs
                     [ ( "status", GraphQl.type_ "FUTURE" )
@@ -373,10 +401,18 @@ pageRequest model =
                               )
                             ]
                       )
+                    , ( "orderby"
+                      , GraphQl.queryArgs [
+                          ( "field", GraphQl.type_ "DATE" )
+                        , ( "order", GraphQl.type_ "ASC" )
+                      ])
                     ]
                 )
             |> GraphQl.withSelectors
-                [ GraphQl.field "edges"
+                [ GraphQl.field "pageInfo"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "startCursor" ]
+                , GraphQl.field "edges"
                     |> GraphQl.withSelectors
                         [ GraphQl.field "node"
                             |> GraphQl.withSelectors
@@ -489,6 +525,54 @@ articlesRequest cursor =
         ]
         |> GraphQl.withVariables []
 
+eventsRequest : String -> Int -> Int -> Int -> Operation Query Variables
+eventsRequest cursor day month year =
+    GraphQl.named "events"
+        [ GraphQl.field "events"
+            |> GraphQl.withArgument "first" (GraphQl.int 1)
+            |> GraphQl.withArgument "after" (GraphQl.string cursor)
+            |> GraphQl.withArgument "where"
+                (GraphQl.queryArgs
+                    [ ( "status", GraphQl.type_ "FUTURE" )
+                    , ( "dateQuery"
+                      , GraphQl.queryArgs
+                            [ ( "after"
+                              , GraphQl.queryArgs
+                                    [ ( "day", GraphQl.int day )
+                                    , ( "month", GraphQl.int month )
+                                    , ( "year", GraphQl.int year )
+                                    ]
+                              )
+                            ]
+                      )
+                    , ( "orderby"
+                      , GraphQl.queryArgs [
+                          ( "field", GraphQl.type_ "DATE" )
+                        , ( "order", GraphQl.type_ "ASC" )
+                      ])
+                    ]
+                )
+            |> GraphQl.withSelectors
+                [ GraphQl.field "pageInfo"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "startCursor" ]
+                , GraphQl.field "edges"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "node"
+                            |> GraphQl.withSelectors
+                                [ GraphQl.field "title"
+                                , GraphQl.field "slug"
+                                , GraphQl.field "excerpt"
+                                , GraphQl.field "date"
+                                , GraphQl.field "featuredImage"
+                                    |> GraphQl.withSelectors
+                                        [ GraphQl.field "sourceUrl"
+                                        ]
+                                ]
+                        ]
+                ]
+        ]
+        |> GraphQl.withVariables []
 
 baseArticlesRequest :
     Operation Query Variables
@@ -497,11 +581,23 @@ baseArticlesRequest :
 baseArticlesRequest =
     GraphQl.query graphqlEndpoint
 
+baseEventsRequest :
+    Operation Query Variables
+    -> Decoder EventsOnlyData
+    -> GraphQl.Request Query Variables EventsOnlyData
+baseEventsRequest =
+    GraphQl.query graphqlEndpoint
+
 
 sendArticlesRequest : String -> Cmd Msg
 sendArticlesRequest cursor =
     baseArticlesRequest (articlesRequest cursor) decodeArticlesOnlyData
         |> GraphQl.send GotArticles
+
+sendEventsRequest : String -> Int -> Int -> Int -> Cmd Msg
+sendEventsRequest cursor day month year =
+    baseEventsRequest (eventsRequest cursor day month year) decodeEventsOnlyData
+        |> GraphQl.send GotEvents
 
 
 createEvent : EventNode -> Event
@@ -525,6 +621,7 @@ update msg model =
                         , content = data.pageBy.content
                         , featuredImage = data.pageBy.featuredImage
                         , events = List.map createEvent data.events.edges
+                        , eventsNext = data.events.pageInfo.startCursor
                         , articles = List.map createArticle data.articles.edges
                         , articlesMore = data.articles.pageInfo.hasNextPage
                         , articlesNext = data.articles.pageInfo.endCursor
@@ -564,6 +661,28 @@ update msg model =
         GotArticles (Err err) ->
             ( model, Cmd.none )
 
+        GetEvents cursor ->
+            let
+               day = (Maybe.withDefault 1 model.day)
+               month = (Maybe.withDefault 1 model.month)
+               year = (Maybe.withDefault 2018 model.year)
+            in
+                ( model, sendEventsRequest cursor day month year)
+
+        GotEvents (Ok data) ->
+            ( { model
+                | events = model.events ++ (List.map createEvent data.events.edges)
+                , eventsNext = data.events.pageInfo.startCursor
+              }
+            , Cmd.none
+            )
+
+        GotEvents (Err err) ->
+            let
+                hasError = Debug.log "GotEvents err" err
+            in 
+                ( model, Cmd.none )
+
         GotDate date ->
             let
                 modelWithDate =
@@ -602,9 +721,19 @@ viewMoreBtn { articlesMore, articlesNext } =
             [ center, mv3, w_100 ]
     in
         if articlesMore then
-            div [ classList [ ( "double_b_btns", True ) ], onClick (GetArticles articlesNext) ] [ text "load more" ]
+            div [ classList [ ( "double_b_btns", True ) ], onClick (GetArticles articlesNext) ] [ text "more articles" ]
         else
             div [ classList [ ( "double_b_btns", True ) ] ] [ text "no more articles" ]
+
+viewMoreEventsBtn : Model -> Html.Html Msg
+viewMoreEventsBtn { eventsNext } =
+    if (String.isEmpty eventsNext) then
+        div [] []
+    else
+        div [ 
+            classList [ ( "double_b_btns", True ), ( "cmf-blue", True ), ( "b__cmf_blue", True) ]
+            , onClick (GetEvents eventsNext)
+            ] [ text "more events" ]
 
 
 viewAuthor : Author -> Html.Html Msg
@@ -639,7 +768,7 @@ viewEvent { title, slug, excerpt, date, featuredImage } =
                 , classes [ flex_none ]
                 ]
                 []
-            , div [ classes [ pl2 ] ]
+            , div [ classes [ pt3, ph3 ] ]
                 [ div
                     [ classList [ ( "feature-font", True ), ( "cmf-blue", True ) ]
                     , classes [ link ]
@@ -652,7 +781,7 @@ viewEvent { title, slug, excerpt, date, featuredImage } =
                     []
                 ]
             , div
-                [ classes [ flex_none, flex, flex_column, items_center, justify_between ]
+                [ classes [ flex_none, flex, flex_column, justify_between, self_start ]
                 , classList [ ( "event-card-date", True ) ]
                 ]
                 [ div [ classes [ bg_dark_red, white, w_100, tc ] ] [ text (formatDate "%b" date) ]
@@ -728,7 +857,8 @@ view model =
                     , classes [ f2, ph2, pv4, w_100, center, mw7 ]
                     ]
                     [ text "Upcoming Events" ]
-                , div [] (List.map viewEvent (List.reverse model.events))
+                , div [] (List.map viewEvent model.events)
+                , div [ classes [ w_100, pt4 ] ] [ viewMoreEventsBtn model ]
                 ]
         , if List.isEmpty model.articles then
             div [ classList [ ( "loading", True ) ] ] []

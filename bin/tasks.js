@@ -40,7 +40,11 @@ module.exports = [
               sourceUrl
             }
           }
-      events(where: {status: FUTURE}){
+      events(where: {status: FUTURE}, first: 4, after: null){
+        pageInfo{
+          hasNextPage
+          endCursor
+        }
         edges{
           node{
             slug
@@ -196,6 +200,8 @@ function formatHome ({pageBy, events, articles, tags}) {
     , content: pageBy.content
     , featuredImage: pageBy.featuredImage
     , events: listEvent(events.edges)
+    , eventsMore: true
+    , eventsNext: "null"
     , articles: listArticle(articles.edges)
     , articlesMore: true
     , articlesNext: "null"
