@@ -84,7 +84,6 @@ main =
 init : ( Model, Cmd Msg )
 init =
     ( { headerModel = Header.initModel
-      , footerModel = Footer.initModel
       , events = []
       , year = Nothing
       , month = Nothing
@@ -97,13 +96,11 @@ init =
 type Msg
     = GotContent (Result Http.Error Data)
     | HeaderMsg Header.Msg
-    | FooterMsg Footer.Msg
     | GotDate Date.Date
 
 
 type alias Model =
     { headerModel : Header.Model
-    , footerModel : Footer.Model
     , events : List Event
     , year : Maybe Int
     , month : Maybe Int
@@ -140,9 +137,6 @@ type alias Event =
 type alias HeaderModel =
     Header.Model
 
-
-type alias FooterModel =
-    Footer.Model
 
 
 decodeData : Decoder Data
@@ -183,7 +177,6 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" Header.decodeModel
-        |> required "footerModel" Footer.decodeModel
         |> required "events" (Decode.list decodeEvent)
         |> required "year" (nullable int)
         |> required "month" (nullable int)
@@ -264,13 +257,6 @@ update msg model =
                     Header.update subMsg model.headerModel
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
-
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
         GotDate date ->
             let
@@ -370,5 +356,5 @@ view model =
                     , div [] (List.map viewEvent (List.reverse model.events))
                     ]
             ]
-        , Html.map FooterMsg (Footer.view model.footerModel)
+        , Footer.view
         ]

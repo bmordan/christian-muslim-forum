@@ -93,7 +93,6 @@ main =
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     ( { headerModel = Header.initModel
-      , footerModel = Footer.initModel
       , searchModel = Search.initModel
       , events = []
       , event = maybeSlug location
@@ -108,7 +107,6 @@ init location =
 type Msg
     = GotContent (Result Http.Error Data)
     | HeaderMsg Header.Msg
-    | FooterMsg Footer.Msg
     | SearchMsg Search.Msg
     | Slug Navigation.Location
     | GotDate Date.Date
@@ -116,7 +114,6 @@ type Msg
 
 type alias Model =
     { headerModel : Header.Model
-    , footerModel : Footer.Model
     , searchModel : Search.Model
     , events : List Event
     , event : Maybe String
@@ -155,10 +152,6 @@ type alias Event =
 
 type alias HeaderModel =
     Header.Model
-
-
-type alias FooterModel =
-    Footer.Model
 
 
 type alias SearchModel =
@@ -204,7 +197,6 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" Header.decodeModel
-        |> required "footerModel" Footer.decodeModel
         |> required "searchModel" Search.decodeModel
         |> required "events" (Decode.list decodeEvent)
         |> required "event" (nullable string)
@@ -288,13 +280,6 @@ update msg model =
                     Header.update subMsg model.headerModel
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
-
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
 
         SearchMsg subMsg ->
             let
@@ -521,6 +506,6 @@ view model =
                     ]
                 , Html.map SearchMsg (Search.view model.searchModel)
                 ]
-            , Html.map FooterMsg (Footer.view model.footerModel)
+            , Footer.view
             , node "script" [ src "http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5a59d97a9c28847a" ] []
             ]

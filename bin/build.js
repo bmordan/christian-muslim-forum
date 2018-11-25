@@ -17,7 +17,6 @@ module.exports = function ({moduleName, distFolder, query, formatter, make}, don
     const model = pipe(
      formatter
       , assoc('headerModel', {showMenu: false})
-      , assoc('footerModel', {modal: false, fname: "", lname: "", email: "", message: ""})
       , assoc('searchModel', {term: "", currentTerm: "", tags: [], results: []})
     )(res)
     return { model: model, decoder: `${moduleName}.decodeModel`, newLines: false, indent: 0 }

@@ -101,7 +101,6 @@ init =
     let
         model =
             { headerModel = Header.initModel
-            , footerModel = Footer.initModel
             , searchModel = Search.initModel
             , title = ""
             , content = ""
@@ -121,7 +120,6 @@ init =
 type Msg
     = GotContent (Result Error Data)
     | HeaderMsg Header.Msg
-    | FooterMsg Footer.Msg
     | SearchMsg Search.Msg
     | GetArticles String
     | GotArticles (Result Error ArticlesOnlyData)
@@ -130,7 +128,6 @@ type Msg
 
 type alias Model =
     { headerModel : Header.Model
-    , footerModel : Footer.Model
     , searchModel : Search.Model
     , title : String
     , content : String
@@ -231,10 +228,6 @@ type alias HeaderModel =
     Header.Model
 
 
-type alias FooterModel =
-    Footer.Model
-
-
 type alias SearchModel =
     Search.Model
 
@@ -311,7 +304,6 @@ decodeModel : Decoder Model
 decodeModel =
     decode Model
         |> required "headerModel" Header.decodeModel
-        |> required "footerModel" Footer.decodeModel
         |> required "searchModel" Search.decodeModel
         |> required "title" string
         |> required "content" string
@@ -550,13 +542,6 @@ update msg model =
             in
                 ( { model | headerModel = updatedHeaderModel }, Cmd.map HeaderMsg headerCmd )
 
-        FooterMsg subMsg ->
-            let
-                ( updatedFooterModel, footerCmd ) =
-                    Footer.update subMsg model.footerModel
-            in
-                ( { model | footerModel = updatedFooterModel }, Cmd.map FooterMsg footerCmd )
-
         SearchMsg subMsg ->
             let
                 ( updatedSearchModel, searchCmd ) =
@@ -765,5 +750,5 @@ view model =
                 [ text "Search" ]
             , Html.map SearchMsg (Search.view model.searchModel)
             ]
-        , Html.map FooterMsg (Footer.view model.footerModel)
+        , Footer.view
         ]

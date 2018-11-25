@@ -1,18 +1,8 @@
 module Footer exposing (..)
 
 import Html exposing (nav, a, text, div, img, nav, input, node)
-import Html.Attributes exposing (href, src, style, classList, value, name, placeholder)
-import Html.Events exposing (onClick, onInput)
-import Http exposing (..)
+import Html.Attributes exposing (href, src, style, classList, value, name, placeholder, target)
 import Config exposing (frontendUrl)
-import Json.Encode as Encode
-import Json.Decode as Decode exposing (Decoder, field, int, string, list, bool, nullable)
-import Json.Decode.Pipeline exposing (decode, required, requiredAt)
-import Dom exposing (Error)
-import Dom.Scroll exposing (toLeft, toRight)
-import Task
-import Process
-import Time
 import Helpers exposing (chev, navItems, createNavItem)
 import Tachyons exposing (..)
 import Tachyons.Classes
@@ -72,136 +62,7 @@ import Tachyons.Classes
         , h4
         )
 
-
-type Msg
-    = Modal
-    | Email String
-    | Fname String
-    | Lname String
-    | Subscribe
-    | SubscriptionRes (Result Http.Error Subscription)
-    | CloseModal
-
-
-type alias Model =
-    { modal : Bool
-    , email : String
-    , fname : String
-    , lname : String
-    , message : String
-    }
-
-
-type alias Subscription =
-    { status : String
-    , fname : String
-    , email : String
-    }
-
-
-initModel : Model
-initModel =
-    Model False "" "" "" ""
-
-
-subscribtionRequest : Model -> Http.Request Subscription
-subscribtionRequest model =
-    Http.post (frontendUrl ++ "/subscribe") (Http.jsonBody (encodePayload model)) decodeSubscription
-
-
-encodePayload : Model -> Encode.Value
-encodePayload { email, fname, lname } =
-    Encode.object
-        [ ( "email", (Encode.string email) )
-        , ( "fname", (Encode.string fname) )
-        , ( "lname", (Encode.string lname) )
-        ]
-
-
-decodeSubscription : Decoder Subscription
-decodeSubscription =
-    decode Subscription
-        |> required "status" string
-        |> required "fname" string
-        |> required "email" string
-
-
-decodeModel : Decoder Model
-decodeModel =
-    decode Model
-        |> required "modal" bool
-        |> required "email" string
-        |> required "fname" string
-        |> required "lname" string
-        |> required "message" string
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        Modal ->
-            ( { model | modal = not model.modal }, Cmd.none )
-
-        Fname fname ->
-            ( { model | fname = fname }, Cmd.none )
-
-        Lname lname ->
-            ( { model | lname = lname }, Cmd.none )
-
-        Email email ->
-            ( { model | email = email }, Cmd.none )
-
-        Subscribe ->
-            ( model, Http.send SubscriptionRes (subscribtionRequest model) )
-
-        SubscriptionRes (Ok res) ->
-            ( { model
-                | message = "Successfully Subscribed"
-              }
-            , pauseThen CloseModal
-            )
-
-        SubscriptionRes (Err err) ->
-            ( { model | message = stringifyError err }, Cmd.none )
-
-        CloseModal ->
-            ( { model
-                | modal = False
-                , message = ""
-                , email = ""
-                , fname = ""
-                , lname = ""
-              }
-            , Cmd.none
-            )
-
-
-pauseThen : Msg -> Cmd Msg
-pauseThen msg =
-    Process.sleep (2 * Time.second)
-        |> Task.perform (\_ -> msg)
-
-
-stringifyError : Http.Error -> String
-stringifyError err =
-    case err of
-        BadUrl msg ->
-            "Failed. BadUrl" ++ msg
-
-        Timeout ->
-            "Failed. Subscription service took too long to respond"
-
-        NetworkError ->
-            "Failed. Something is wrong with the connection to the network"
-
-        BadStatus res ->
-            "Failed. Something is wrong"
-
-        BadPayload msg res ->
-            "Failed. Something is wrong with these values"
-
-
-address : Html.Html Msg
+address : Html.Html msg
 address =
     div [ classes [ white, pl3, db ] ]
         [ div [ classes [ mb1, tc, tl_ns ] ] [ text "Christian Muslim Forum" ]
@@ -226,71 +87,13 @@ address =
           ]
         ]
 
-
-modal : Model -> Html.Html Msg
-modal model =
-    if not model.modal then
-        div [] []
-    else
-        div
-            [ classList [ ( "modal", True ) ]
-            , classes [ flex, items_center, justify_center ]
-            ]
-            [ div
-                [ classes [ bg_white, flex, flex_column, justify_between, br2 ]
-                , classList [ ( "modal-box", True ) ]
-                ]
-                [ div [ classes [ fr, pa2, tr ], onClick CloseModal ] [ text "close" ]
-                , div [ classes [ pa2, tc ] ] [text "Subscribe to our email newsletter"]
-                , div [ classes [ flex, flex_column ] ]
-                    [ input
-                        [ name "fname"
-                        , value model.fname
-                        , placeholder "First name"
-                        , onInput Fname
-                        ]
-                        []
-                    , input
-                        [ name "lname"
-                        , value model.lname
-                        , placeholder "Last name"
-                        , onInput Lname
-                        ]
-                        []
-                    , input
-                        [ name "email"
-                        , value model.email
-                        , placeholder "email"
-                        , onInput Email
-                        ]
-                        []
-                    ]
-                , if model.message /= "" then
-                    div [ classes [ pa3, tc ] ] [ text model.message ]
-                  else
-                    div [] []
-                , div
-                    [ classList [ ( "bg_cmf_islamic", True ) ]
-                    , classes [ h4, flex, items_center, justify_center ]
-                    ]
-                    [ div
-                        [ classList [ ( "double_b_btns", True ) ]
-                        , onClick Subscribe
-                        ]
-                        [ text "Subscribe" ]
-                    ]
-                ]
-            ]
-
-
-view : Model -> Html.Html Msg
-view model =
+view : Html.Html msg
+view =
     div
         [ classes [ w_100, flex, flex_column, justify_start ]
         , classList [ ( "bg_cmf_islamic", True ), ( "footer", True ) ]
         ]
-        [ modal model
-        , div
+        [ div
             [ classes [ w_100, db, flex_auto ]
             , Html.Attributes.style [ ( "width", "100vw" ) ]
             , Html.Attributes.id "footer-nav"
@@ -306,15 +109,23 @@ view model =
                     [ address ]
                 , div [ classes [ fl, w_100, w_50_ns ] ]
                     [ div [ classes [ fr_ns, pv6, pb0_ns, pt0_ns, pr3_ns ] ]
-                        [ div [ classList [ ( "double_b_btns", True ) ], onClick Modal ] [ text "Subscribe" ]
+                        [ Html.a
+                            [ href "https://christianmuslimforum.us14.list-manage.com/subscribe?u=eceafff6c1e4b765f4437fa07&id=d7f8ff1bcb"
+                            ,  target "_blank"
+                            , classes [ link ]
+                            ]
+                            [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Subscribe" ]
+                            ]
                         , Html.a
                             [ href "https://twitter.com/intent/follow?screen_name=ChrisMusForum"
+                            ,  target "_blank"
                             , classes [ link ]
                             ]
                             [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Follow Us" ]
                             ]
                         , Html.a
                             [ href "https://cafdonate.cafonline.org/695#/DonationDetails"
+                            ,  target "_blank"
                             , classes [ link ]
                             ]
                             [ div [ classList [ ( "double_b_btns", True ) ] ] [ text "Donate" ]
