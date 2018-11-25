@@ -108,7 +108,7 @@ init =
             , content = ""
             , featuredImage = Nothing
             , events = []
-            , eventsNext = "null"
+            , eventsNext = Just "null"
             , articles = []
             , articlesMore = True
             , articlesNext = "null"
@@ -138,7 +138,7 @@ type alias Model =
     , content : String
     , featuredImage : Maybe FeaturedImage
     , events : List Event
-    , eventsNext : String
+    , eventsNext : Maybe String
     , articles : List Article
     , articlesMore : Bool
     , articlesNext : String
@@ -200,7 +200,7 @@ type alias ArticlesEdges =
     }
 
 type alias EventsPageInfo =
-    { startCursor : String
+    { endCursor : Maybe String
     }
 
 
@@ -289,7 +289,7 @@ decodePageInfo =
 decodeEventsPageInfo : Decoder EventsPageInfo
 decodeEventsPageInfo =
     decode EventsPageInfo
-        |> required "startCursor" string
+        |> required "endCursor" (nullable string)
 
 
 decodeArticleNode : Decoder ArticleNode
@@ -333,7 +333,7 @@ decodeModel =
         |> required "content" string
         |> required "featuredImage" (nullable decodeFeaturedImage)
         |> required "events" (Decode.list decodeEvent)
-        |> required "eventsNext" string
+        |> required "eventsNext" (nullable string)
         |> required "articles" (Decode.list decodeArticle)
         |> required "articlesMore" bool
         |> required "articlesNext" string
@@ -385,7 +385,7 @@ pageRequest model =
                         ]
                 ]
         , GraphQl.field "events"
-            |> GraphQl.withArgument "first" (GraphQl.int 1)
+            |> GraphQl.withArgument "first" (GraphQl.int 4)
             |> GraphQl.withArgument "after" (GraphQl.string "null")
             |> GraphQl.withArgument "where"
                 (GraphQl.queryArgs
@@ -411,7 +411,7 @@ pageRequest model =
             |> GraphQl.withSelectors
                 [ GraphQl.field "pageInfo"
                     |> GraphQl.withSelectors
-                        [ GraphQl.field "startCursor" ]
+                        [ GraphQl.field "endCursor" ]
                 , GraphQl.field "edges"
                     |> GraphQl.withSelectors
                         [ GraphQl.field "node"
@@ -529,7 +529,7 @@ eventsRequest : String -> Int -> Int -> Int -> Operation Query Variables
 eventsRequest cursor day month year =
     GraphQl.named "events"
         [ GraphQl.field "events"
-            |> GraphQl.withArgument "first" (GraphQl.int 1)
+            |> GraphQl.withArgument "first" (GraphQl.int 4)
             |> GraphQl.withArgument "after" (GraphQl.string cursor)
             |> GraphQl.withArgument "where"
                 (GraphQl.queryArgs
@@ -555,7 +555,7 @@ eventsRequest cursor day month year =
             |> GraphQl.withSelectors
                 [ GraphQl.field "pageInfo"
                     |> GraphQl.withSelectors
-                        [ GraphQl.field "startCursor" ]
+                        [ GraphQl.field "endCursor" ]
                 , GraphQl.field "edges"
                     |> GraphQl.withSelectors
                         [ GraphQl.field "node"
@@ -621,7 +621,7 @@ update msg model =
                         , content = data.pageBy.content
                         , featuredImage = data.pageBy.featuredImage
                         , events = List.map createEvent data.events.edges
-                        , eventsNext = data.events.pageInfo.startCursor
+                        , eventsNext = data.events.pageInfo.endCursor
                         , articles = List.map createArticle data.articles.edges
                         , articlesMore = data.articles.pageInfo.hasNextPage
                         , articlesNext = data.articles.pageInfo.endCursor
@@ -672,16 +672,13 @@ update msg model =
         GotEvents (Ok data) ->
             ( { model
                 | events = model.events ++ (List.map createEvent data.events.edges)
-                , eventsNext = data.events.pageInfo.startCursor
-              }
+                , eventsNext = data.events.pageInfo.endCursor
+            }
             , Cmd.none
             )
 
         GotEvents (Err err) ->
-            let
-                hasError = Debug.log "GotEvents err" err
-            in 
-                ( model, Cmd.none )
+            ( model, Cmd.none )
 
         GotDate date ->
             let
@@ -727,13 +724,19 @@ viewMoreBtn { articlesMore, articlesNext } =
 
 viewMoreEventsBtn : Model -> Html.Html Msg
 viewMoreEventsBtn { eventsNext } =
-    if (String.isEmpty eventsNext) then
-        div [] []
-    else
-        div [ 
-            classList [ ( "double_b_btns", True ), ( "cmf-blue", True ), ( "b__cmf_blue", True) ]
-            , onClick (GetEvents eventsNext)
-            ] [ text "more events" ]
+    case eventsNext of
+        Just cursor ->
+            if (String.isEmpty cursor) then
+                div [] []
+            else
+                div [ 
+                    classList [ ( "double_b_btns", True ), ( "cmf-blue", True ), ( "b__cmf_blue", True) ]
+                    , onClick (GetEvents cursor)
+                    ] [ text "more events" ]
+        Nothing ->
+            div [] []
+    
+        
 
 
 viewAuthor : Author -> Html.Html Msg
