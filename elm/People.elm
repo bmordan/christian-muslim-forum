@@ -334,8 +334,8 @@ orderPeopleList people =
         contributors =
             withTag "contributer" people
 
-        formers =
-            withTag "former-president" people
+        specialists =
+            withTag "specialist" people
 
         consultants =
             withTag "scholar-consultant" people
@@ -343,7 +343,7 @@ orderPeopleList people =
         alumni =
             withTag "cmf-alumni" people
     in
-        List.concat [ patron, presidents, consultants, trustees, contributors, formers, alumni ]
+        List.concat [ patron, trustees, consultants, presidents, specialists, alumni ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

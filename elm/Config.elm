@@ -3,7 +3,7 @@ module Config exposing (graphqlEndpoint, frontendUrl)
 
 wordpressUrl : String
 wordpressUrl =
-    "http://46.101.6.182"
+    "http://api.christianmuslimforum.org"
 
 
 graphqlEndpoint : String
@@ -13,4 +13,4 @@ graphqlEndpoint =
 
 frontendUrl : String
 frontendUrl =
-    "http://christianmuslimforum.net"
+    "http://www.christianmuslimforum.org"
